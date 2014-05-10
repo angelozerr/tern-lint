@@ -3,7 +3,16 @@ tern.lint
 
 [![Build Status](https://secure.travis-ci.org/angelozerr/tern.lint.png)](http://travis-ci.org/angelozerr/tern.lint)
 
-**tern.lint** is a [Tern plugin](http://ternjs.net/doc/manual.html#plugins) to validate JS files.
+**tern.lint** provides :
+
+ * the tern lint plugin `lint.js` to validate JS files.
+ * the CodeMirror lint addon `tern-lint.js` which uses tern lint plugin `lint.js`
+
+Here a screenshot with tern lint and CodeMirror :
+
+![CodeMirror & TernLint](https://github.com/angelozerr/tern.lint/wiki/images/CodeMirrorAddon_TernLintOverview.png)
+
+If you are Eclipse user, you can use this tern lint addon too.
 
 ## Structure
 
