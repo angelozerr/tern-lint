@@ -14,6 +14,14 @@ Here a screenshot with tern lint and CodeMirror :
 
 If you are Eclipse user, you can use this tern lint addon too.
 
+## Features
+
+Today tern lint is very basic : 
+
+ * validate property.
+ 
+Any contribution are welcome!
+
 ## Structure
 
 The basic structure of the project is given in the following way:
