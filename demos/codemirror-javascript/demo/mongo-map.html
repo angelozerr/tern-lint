@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CodeMirror: Mongo Map (this) with Tern demo</title>
+    
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="../../codemirror/lib/codemirror.css">
+    <script src="../../codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="../../codemirror/theme/eclipse.css">
+    <script src="../../codemirror/addon/hint/show-hint.js"></script>
+    <script src="../../codemirror/addon/edit/closetag.js"></script>
+    <script src="../../codemirror/addon/edit/closebrackets.js"></script>    
+    <script src="../../codemirror/addon/edit/matchbrackets.js"></script>
+    <script src="../../codemirror/addon/selection/active-line.js"></script>
+    <script src="../../codemirror/addon/runmode/runmode.js"></script>
+        
+    <script src="../../codemirror/mode/javascript/javascript.js"></script>    
+	<script src="../../jshint/jshint-r12-80277ef.js"></script>
+	<script src="../../jsonlint/jsonlint.js"></script>
+	<script src="../../codemirror/addon/lint/lint.js"></script>
+    <link rel="stylesheet" href="../../codemirror/addon/lint/lint.css">
+	<script src="../../codemirror/addon/lint/javascript-lint.js"></script>
+	<script src="../../codemirror/addon/lint/json-lint.js"></script>
+
+  <!-- Tern JS -->
+  <script src="../../ternjs/acorn/acorn.js"></script>
+  <script src="../../ternjs/acorn/acorn_loose.js"></script>
+  <script src="../../ternjs/acorn/util/walk.js"></script>
+  <script src="../../ternjs/tern/lib/signal.js"></script>
+  <script src="../../ternjs/tern/lib/tern.js"></script>
+  <script src="../../ternjs/tern/lib/def.js"></script>
+  <script src="../../ternjs/tern/lib/comment.js"></script>
+  <script src="../../ternjs/tern/lib/infer.js"></script>
+
+  <!-- Official CodeMirror Tern addon -->
+  <script src="../../codemirror/addon/tern/tern.js"></script>   
+
+  <!-- Extension of CodeMirror Tern addon -->
+  <link rel="stylesheet" href="../addon/hint/tern/tern-extension.css">
+  <script src="../addon/hint/tern/tern-extension.js"></script>    
+  <script src="../addon/hint/tern/defs/ecma5.json.js"></script>
+  <script src="../addon/hint/tern/defs/mongo-map.json.js"></script>
+
+  <!-- CodeMirror Extension -->    
+  <link rel="stylesheet" href="../../codemirror-extension/addon/hint/show-hint-eclipse.css">
+  <script src="../../codemirror-extension/addon/hint/show-context-info.js"></script>
+  <link rel="stylesheet" href="../../codemirror-extension/addon/hint/show-context-info.css">
+  
+  <link rel="stylesheet" href="../../codemirror-extension/addon/hint/templates-hint.css">
+  <script src="../../codemirror-extension/addon/hint/templates-hint.js"></script>
+  
+  <!-- CodeMirror Javascript -->
+  <script src="../addon/hint/javascript/javascript-templates.js"></script>
+  		          
+    <link rel="stylesheet" href="../../codemirror/doc/docs.css">
+	<style type="text/css">
+		.cm-s-eclipse .CodeMirror-activeline-background {background: #e8f2ff !important;}
+    </style>
+  </head>
+  <body>
+    
+    <h1>Mongo Map (this) with Tern</h1>
+    <div>This demo shows in action the lint feature and a powerfull hint with Javascript by using <a href="http://ternjs.net/" >Tern</a>. 
+    If you press Ctrl+Space a hint panel show the code suggest. </br>
+    It uses 2 CodeMirror addons :
+    </div>
+    <ul>
+      <li><a href="#" >"Official CodeMirror" addon/tern/tern.js</a> is a CodeMirror addon to use Tern (completion about variables, methodes etc).
+      </li>
+      <li><a href="../addon/hint/tern/tern-extension.js" >addon/hint/tern/tern-extension.js</a> extends the CodeMirror Tern addon to display/insert signature functions.
+      </li>
+      <li><a href="../addon/hint/javascript/javascript-templates.js" >addon/hint/javascript/javascript-templates.js</a> is a CodeMirror addon to manage javascript 
+      (Eclipse like) templates completions (snippets).
+      </li>
+    </ul>
+<div id="o"></div>
+	<form><textarea id="json" name="json" >{"_id":{"$oid":"50d8fdedadd222278ba9090f"}, "astring" : "xxxx", "adate" : {"$date":"2012-12-25T01:14:21.312Z"}, "anumber" : 1, "aboolean" : true, "anarray" : [{"item":1}, {"item2":"ee"}]}
+	</textarea>
+    <textarea id="code" name="code">function() {
+    var a = [];
+    a.
+	this.// Ctrl+Space
+}
+</textarea></form>
+    <script type="text/javascript">
+       
+       function ObjectId() {
+       
+       }
+       
+	var BSON = {};
+	BSON.parseStrict = (function () {
+	    "use strict";
+		    
+	    return function(text) {
+	    	return JSON.parse(text, function (key, value) {
+	    		// $date
+	    		var v = value["$date"];
+	  			if (v) {
+	  				return new Date(Date.parse(v));
+	  			}
+	  			// $oid
+	  			v = value["$oid"];
+	  			if(v) {
+	  				return new ObjectId(v);
+	  			}		    
+			    return value;
+			});
+	    };
+	}());
+    
+     function passAndHint(cm) {
+     	setTimeout(function() {cm.execCommand("autocomplete");}, 100);
+      	return CodeMirror.Pass;
+      }
+      
+      function myHint(cm) {
+      	return CodeMirror.showHint(cm, CodeMirror.ternHint, {async: true}); 
+      }
+     
+      CodeMirror.commands.autocomplete = function(cm) {
+        CodeMirror.showHint(cm, myHint);
+      }
+      
+      function getText(cm) {
+        var jsonObj = BSON.parseStrict(jsonEditor.getValue());
+        json = toJSONMeta(jsonObj);        
+      	//return "var f=" + cm.getValue() + "f.apply(" + json + ")"; 
+      	return cm.getValue() + ".apply(" + json + ")";
+      	
+      }    
+      
+     var jsonEditor = CodeMirror.fromTextArea(document.getElementById("json"), {
+        mode: 'application/json',
+        theme : "eclipse",
+        styleActiveLine: true,
+        lineNumbers: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        gutters: ["CodeMirror-lint-markers", "CodeMirror-linenumbers"],
+    	lintWith: CodeMirror.jsonValidator
+      });
+      
+      CodeMirror.on(jsonEditor, 'change', function(cm) {
+        var server = CodeMirror.tern.getServer(editor);
+        server.delDoc('[doc]');
+      });
+      
+      function toJSONMeta(jsonObj) {
+        var meta = '{';
+        var i = 0;
+      	for(k in jsonObj) {
+      	  if (i>  0) meta+=',';
+      	    meta+='"';
+      	    meta+=k;
+        	meta+='":';
+        	var v = jsonObj[k];
+        	switch (typeof v)  {
+        	  case "string":
+        	    meta+='""';
+        	    break;
+			  case "number":
+        	    meta+='0';
+        	    break;
+        	  case "boolean":
+        	    meta+='true';
+        	    break; 
+        	  case "object":
+        	    if (v instanceof Date) {
+        	    	meta+='new Date()';
+        	    } else if (v instanceof ObjectId) {
+        	    	meta+='new ObjectId()';
+        	    } else if (Object.prototype.toString.apply(v) === '[object Array]') {
+        	        meta+= '[';
+        	    	var length = v.length;
+                	for (j = 0; j < length; j++) {
+                		meta+= toJSONMeta(v[j]);
+        	    	}
+        	    	meta+= ']';
+        	    } 
+        	    break;
+        	  default:
+        	    meta+='null';
+        	}
+        	i++;
+        }
+        meta+='}';
+        return meta;
+      }
+      
+      jsonEditor.on("change", function() {
+        var json = jsonEditor.getValue();        
+        var jsonObj = BSON.parseStrict(json);
+        json = toJSONMeta(jsonObj);        
+        document.getElementById('o').innerHTML = json;
+      });
+        
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        mode: 'application/javascript',
+        theme : "eclipse",
+        styleActiveLine: true,
+        lineNumbers: true,
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        extraKeys: {
+         	"'.'": passAndHint,
+        	"Ctrl-Space": "autocomplete"
+        },
+        gutters: ["CodeMirror-lint-markers", "CodeMirror-linenumbers"],
+    	lintWith: CodeMirror.javascriptValidator,
+    	ternWith : {
+      		"getText" : getText
+    	} 
+      });
+      
+   
+    </script>
+    
+  </body>
+</html>

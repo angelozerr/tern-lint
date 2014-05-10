@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CodeMirror: Javascript - Hint with Tern demo</title>
+    
+    <!-- CodeMirror -->
+    <link rel="stylesheet" href="../../codemirror/lib/codemirror.css">
+    <script src="../../codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="../../codemirror/theme/eclipse.css">
+    <script src="../../codemirror/addon/edit/closetag.js"></script>
+    <script src="../../codemirror/addon/edit/closebrackets.js"></script>    
+    <script src="../../codemirror/addon/edit/matchbrackets.js"></script>
+    <script src="../../codemirror/addon/selection/active-line.js"></script>
+    <script src="../../codemirror/addon/runmode/runmode.js"></script>
+    <script src="../../codemirror/mode/javascript/javascript.js"></script>    
+
+  <!-- Tern JS -->
+  <script src="../../ternjs/acorn/acorn.js"></script>
+  <script src="../../ternjs/acorn/acorn_loose.js"></script>
+  <script src="../../ternjs/acorn/util/walk.js"></script>
+  <script src="../../ternjs/tern/lib/signal.js"></script>
+  <script src="../../ternjs/tern/lib/tern.js"></script>
+  <script src="../../ternjs/tern/lib/def.js"></script>
+  <script src="../../ternjs/tern/lib/comment.js"></script>
+  <script src="../../ternjs/tern/lib/infer.js"></script>
+
+  <!-- Official CodeMirror Tern addon -->
+  <script src="../../codemirror/addon/tern/tern.js"></script>   
+
+  <!-- Extension of CodeMirror Tern addon -->
+  <link rel="stylesheet" href="../addon/hint/tern/tern-extension.css">
+  <script src="../addon/hint/tern/tern-extension.js"></script>    
+  <script src="../addon/hint/tern/defs/ecma5.json.js"></script>
+  <script src="../addon/hint/tern/defs/browser.json.js"></script>
+
+  <!-- CodeMirror Extension -->  
+  
+  <link rel="stylesheet" href="../../codemirror-extension/addon/hover/text-hover.css">
+  <script src="../../codemirror-extension/addon/hover/text-hover.js"></script>
+  
+  <!-- CodeMirror Javascript -->
+  <script src="../addon/hint/tern/tern-hover.js"></script>
+  		          
+    <link rel="stylesheet" href="../../codemirror/doc/docs.css">
+  </head>
+  <body>
+    
+    <h1>Javascript - Hover with Tern demo</h1>
+    <div>This demo shows in action a powerfull hint with Javascript by using <a href="http://ternjs.net/" >Tern</a>. 
+    If you press Ctrl+Space a hint panel show the code suggest. </br>
+    It uses 2 CodeMirror addons :
+    </div>
+    <ul>
+      <li><a href="#" >"Official CodeMirror" addon/tern/tern.js</a> is a CodeMirror addon to use Tern (completion about variables, methodes etc).
+      </li>
+      <li><a href="../addon/hint/tern/tern-extension.js" >addon/hint/tern/tern-extension.js</a> extends the CodeMirror Tern addon to display/insert signature functions.
+      </li>
+      <li><a href="../addon/hint/javascript/javascript-templates.js" >addon/hint/javascript/javascript-templates.js</a> is a CodeMirror addon to manage javascript 
+      (Eclipse like) templates completions (snippets).
+      </li>
+    </ul>
+
+    <form><textarea id="code" name="code">var arr = [];
+    var a = []
+a.
+</textarea></form>
+    <script type="text/javascript">
+       
+      function myOpenFunc() {
+      	alert('e');
+      }
+      
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        mode: 'application/javascript',
+        theme : "eclipse",
+        styleActiveLine: true,
+        lineNumbers: true,
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,        
+        gutters: ["CodeMirror-linenumbers"],
+        textHover: {delay:300}
+      });
+    </script>
+  </body>
+</html>
