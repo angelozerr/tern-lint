@@ -12,7 +12,15 @@ Here a screenshot with tern lint and CodeMirror :
 
 ![CodeMirror & TernLint](https://github.com/angelozerr/tern.lint/wiki/images/CodeMirrorAddon_TernLintOverview.png)
 
-If you are Eclipse user, you can use this tern lint addon too.
+If you are Eclipse user, you can use this tern lint addon too. See [Tern IDE & Validation](https://github.com/angelozerr/tern.java/wiki/Tern-&-Validation)
+
+## Features
+
+Today tern lint is very basic : 
+
+ * validate property.
+ 
+Any contribution are welcome!
 
 ## Structure
 
