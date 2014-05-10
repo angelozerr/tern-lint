@@ -18,7 +18,7 @@
           var memberExpr = {node:node, state:file.scope};
           var tp = infer.expressionType(memberExpr);
           if (node.property.name != "✖" && !(tp && tp.propertyOf && tp.propertyOf.hasProp(node.property.name))) {
-            messages.push({message: "Unknow property '" + node.property.name + "'", 
+            messages.push({message: "Unknown property '" + node.property.name + "'", 
               from: outputPos(query, file, node.property.start),
               to: outputPos(query, file, node.property.end),
               severity : 'warning'});
