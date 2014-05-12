@@ -10,6 +10,8 @@ tern.lint
 
 # Integration
 
+See [Integration](https://github.com/angelozerr/tern.lint/wiki/Integration) for more information to integrate the tern lint plugin in your editor.
+
 ## With CodeMirror : 
 
 Here a screenshot with tern lint and CodeMirror :
