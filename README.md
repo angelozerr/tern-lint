@@ -55,10 +55,11 @@ and the **JSON response** of the tern server :
 	
 ## Features
 
-Today tern lint is very basic : 
+Today tern lint is very basic, it manage those validation rules : 
 
- * validate property.
- 
+ * unknown property. (ex : document.getElementByIdXXX  where getElementByIdXXX is an unknown property of document)
+ * unknown identifier. (ex : a = '' where a is an unknown identifier)
+  
 Any contribution are welcome!
 
 ## Structure
