@@ -9,7 +9,7 @@
     "url": "git://github.com/angelozerr/tern.lint.git"
   },
   "scripts": {
-    "test": "./bin/test"
+    "test": "node test/tests.js"
   },
   "dependencies": {
     "tern": ">=0.5.0"

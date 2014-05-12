@@ -7,14 +7,9 @@
 })(function(infer, tern, walk) {
   "use strict";
   
-  tern.defineQueryType("lint", {
-    takesFile: true,
-    run: function(server, query, file) {
-      
-      var messages = [];
-      var ast = file.ast;
-      walk.simple(ast, {
-        MemberExpression: function(node) {
+  var scopeGatherer = walk.make({
+	MemberExpression: function(node, state, c) {
+		  var file = state.file, messages = state.messages, query = state.query;
           var memberExpr = {node:node, state:file.scope};
           var tp = infer.expressionType(memberExpr);
           if (node.property.name != "✖" && !(tp && tp.propertyOf && tp.propertyOf.hasProp(node.property.name))) {
@@ -23,28 +18,31 @@
               to: outputPos(query, file, node.property.end),
               severity : 'warning'});
           }
-        },        
-        FunctionDeclaration: function(node) {
-          //console.log(node);
-        },        
-        FunctionExpression: function(node) {
-          //console.log(node);
-        },        
-        CallExpression: function(node) {
-          //console.log(node)
-//          if (node.callee.type == "MemberExpression" &&
-//              !node.callee.computed && node.arguments.length &&
-//              /^(value|constant|controller|factory|provider)$/.test(node.callee.property.name)) {
-//            var before = comment.commentsBefore(text, node.callee.property.start - 1);
-//            if (before) {
-//              var first = before[0], dot = first.search(/\.\s/);
-//              if (dot > 5) first = first.slice(0, dot + 1);
-//              first = first.trim().replace(/\s*\n\s*\*\s*|\s{1,}/g, " ");
-//              node.arguments[0].angularDoc = first;
-//            }
-//          }
         }
-      });
+  	,
+  	CallExpression: function(node, state, c) {
+  		 var file = state.file, messages = state.messages, query = state.query;
+  		 node = node.callee;
+         var memberExpr = {node:node, state:file.scope};
+         var tp = infer.expressionType(memberExpr);
+         if (node.property.name != "✖" && !(tp && tp.propertyOf && tp.propertyOf.hasProp(node.property.name))) {
+           messages.push({message: "Unknown property '" + node.property.name + "'", 
+             from: outputPos(query, file, node.property.start),
+             to: outputPos(query, file, node.property.end),
+             severity : 'warning'});
+         }
+  	}
+  });
+
+  tern.defineQueryType("lint", {
+    takesFile: true,
+    run: function(server, query, file) {
+      
+      var messages = [];
+      var ast = file.ast;
+      var state = {messages: messages, file : file, query : query}
+      walk.recursive(ast, state, null, scopeGatherer);
+      
       return {messages: messages};
     }
   });
