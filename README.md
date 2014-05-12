@@ -59,6 +59,7 @@ Today tern lint is very basic, it manage those validation rules :
 
  * unknown property. (ex : document.getElementByIdXXX  where getElementByIdXXX is an unknown property of document)
  * unknown identifier. (ex : a = '' where a is an unknown identifier)
+ * not a function (ex : var a = []; a.length() is not valid because length of array is not a function)
   
 Any contribution are welcome!
 
