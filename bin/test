@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+var filter = process.argv[2];
+
+require("../tests/runcases").runTests(filter);

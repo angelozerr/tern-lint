@@ -1,0 +1,17 @@
+{
+  "name": "tern.lint",
+  "license": "MIT",
+  "version": "0.0.1",
+  "author": "Angelo ZERR <angelo.zerr@gmail.com>",
+  "description": "Tern plugin to validate JS files.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/angelozerr/tern.lint.git"
+  },
+  "scripts": {
+    "test": "./bin/test"
+  },
+  "dependencies": {
+    "tern": ">=0.5.1"
+  }
+}
