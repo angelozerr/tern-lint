@@ -6,7 +6,7 @@
   mod(tern, tern, acorn.walk);
 })(function(infer, tern, walk) {
   "use strict";
-
+  
   function outputPos(query, file, pos) {
     if (query.lineCharPositions) {
       var out = file.asLineChar(pos);
@@ -139,7 +139,7 @@
   //   infer.searchVisitor
   //   infer.fullVisitor
   var base = scopeVisitor;
-
+  
   tern.defineQueryType("lint", {
     takesFile: true,
     run: function(server, query, file) {
@@ -153,6 +153,50 @@
         return {messages: []};
       }
     }
+  });
+
+  var lints = Object.create(null);
+  tern.registerLint = function(defName, path, prop, lint) { 
+	var lintsForDef = lints[defName];
+	if (!lintsForDef) {lintsForDef = []; lints[defName] = lintsForDef;} 
+	lintsForDef.push({path: path, prop: prop, lint: lint});
+  };
+  
+  tern.registerPlugin("lint", function(server) {	    
+    return {
+    	passes: {postLoadDef: postLoadDef}
+    };
+  });
+  
+  function postLoadDef(json) {
+    var cx = infer.cx(), defName = json["!name"], lintsForDef = lints[defName];
+    if (cx.paths && lintsForDef) {
+      for (var i = 0; i < lintsForDef.length; i++) {
+        var dataLint = lintsForDef[i];
+        var proto = cx.paths[dataLint.path], type = null;
+        if (proto) {
+          type = proto.getProp(dataLint.prop).getType();
+        } else {
+          var o = cx.props[dataLint.path];
+          if (o) {
+            type = o[0].props[dataLint.prop].getType();
+          }
+        } 
+        if (type) type.lint = dataLint.lint;				
+	  }          
+    }
+  }
+  
+  // Hack to manage lint for node, requirejs which are hosted in tern github
+  tern.registerLint("node", "require", "require", function(node, addMessage) {
+	  var cx = infer.cx(), server = cx.parent, data = server._node;
+	  var argNodes = node.arguments;
+	  if (argNodes && argNodes.length && argNodes[0].type == "Literal" || typeof argNodes[0].value == "string") {
+	    var name = argNodes[0].value, module = cx.definitions.node[name];
+	    if (!module) {
+      	  addMessage(argNodes[0], "Unknown module '" + name + "'", 'warning');
+        }
+	  }
   });
   
 });  
