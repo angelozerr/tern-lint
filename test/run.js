@@ -20,17 +20,14 @@ exports['test Unknown property'] = function() {
 }
 
 exports['test Unknown property + identifier'] = function() {
-	// without 'browser' def, document is not known, and getElementById too
+	// without 'browser' def, document is not known
+	// The check does not continue to getElementById, since
+	// the real cause is that document is undefined.
 	util.assertLint("var elt = document.getElementById('myId');", {
 		messages : [ {
 			"message" : "Unknown identifier 'document'",
 			"from" : 10,
 			"to" : 18,
-			"severity" : "warning"
-		}, {
-			"message" : "Unknown property 'getElementById'",
-			"from" : 19,
-			"to" : 33,
 			"severity" : "warning"
 		} ]
 	});
@@ -93,6 +90,24 @@ exports['test functions parameters'] = function() {
 	});
 }
 
+
+exports['test properties on functions parameters'] = function() {
+	// In this case the type of `a` is inferred as an object with a property `len`.
+	util.assertLint("function test(a) { var len = a.len; }; test({len: 5});", {
+		messages : [ ]
+	});
+
+	// In this case the type of `a` is unknown, and should not produce warnings
+	// on any of its properties.
+	util.assertLint("function test(a) { var len = a.len; };", {
+		messages : [ ]
+	});
+
+	// The same goes for function calls on an unknown type
+	util.assertLint("function test(a) { var len = a.myLength(); };", {
+		messages : [ ]
+	});
+}
 
 
 if (module == require.main)

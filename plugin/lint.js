@@ -59,9 +59,19 @@
       // Detects expressions of the form `object.property`
       MemberExpression: function(node, state, c) {
         var type = infer.expressionType({node: node, state: state});
-        if(type.isEmpty()) {
+        var parentType = infer.expressionType({node: node.object, state: state});
+        
+        if(!parentType.isEmpty() && type.isEmpty()) {
           // The type of the property cannot be determined, which means
           // that the property probably doesn't exist.
+
+          // We only do this check if the parent type is known,
+          // otherwise we will generate errors for an entire chain of unknown
+          // properties.
+
+          // Also, the expression may be valid even if the parent type is unknown,
+          // since the inference engine cannot detect the type in all cases.
+          
           var error = makeError(node, "Unknown property '" + getName(node) + "'");
           messages.push(error);
         }
