@@ -55,20 +55,10 @@
       return node;
     }
 
-    function getScope(node) {
-      // We need to get the scope of the specific node, so
-      // that variables declared in the current scope are
-      // correctly detected.
-
-      // This could be a performance hog (haven't confirmed)
-
-      return infer.scopeAt(file.ast, node, file.scope);
-    }
-
     var visitors = {
       // Detects expressions of the form `object.property`
       MemberExpression: function(node, state, c) {
-        var type = infer.expressionType({node: node, state: getScope(node)});
+        var type = infer.expressionType({node: node, state: state});
         if(type.isEmpty()) {
           // The type of the property cannot be determined, which means
           // that the property probably doesn't exist.
@@ -79,7 +69,7 @@
       // Detects top-level identifiers, e.g. the object in
       // `object.property` or just `object`.
       Identifier: function(node, state, c) {
-        var type = infer.expressionType({node: node, state: getScope(node)});
+        var type = infer.expressionType({node: node, state: state});
 
         if(type.isEmpty()) {
           // The type of the identifier cannot be determined, which means
@@ -92,7 +82,7 @@
       // `node.callee` is the expression (Identifier or MemberExpression)
       // the is called as a function.
       CallExpression: function(node, state, c) {
-        var type = infer.expressionType({node: node.callee, state: getScope(node)});
+        var type = infer.expressionType({node: node.callee, state: state});
         if(!type.isEmpty()) {
           // If type.isEmpty(), it is handled by MemberExpression/Identifier already.
 
@@ -111,8 +101,24 @@
     return visitors;
   }
 
+  // Adapted from infer.searchVisitor.
+  // Record the scope and pass it through in the state.
+  // VariableDeclaration in infer.searchVisitor breaks things for us.
+  var scopeVisitor = walk.make({
+    Function: function(node, _st, c) {
+      var scope = node.body.scope;
+      if (node.id) c(node.id, scope);
+      for (var i = 0; i < node.params.length; ++i)
+        c(node.params[i], scope);
+      c(node.body, scope, "ScopeBody");
+    }
+  });
 
-  var base = walk.base;
+  // Other alternative bases:
+  //   walk.base (no scope handling)
+  //   infer.searchVisitor
+  //   infer.fullVisitor
+  var base = scopeVisitor;
 
   tern.defineQueryType("lint", {
     takesFile: true,
