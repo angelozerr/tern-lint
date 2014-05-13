@@ -81,11 +81,14 @@ exports['test variables inside functions'] = function() {
 
 
 exports['test functions parameters'] = function() {
-	// util.assertLint("function test(a) { var len = a.len; }; test({len: 5});", {
-	// 	messages : [ ]
-	// });
+	// In this case the type of `a` is inferred as a string
+	util.assertLint("function test(a) { var t = a; }; test('something');", {
+		messages : [ ]
+	});
 
-	util.assertLint("function test(a) { var len = a.len; };", {
+	// In this case the type is unknown, but the variable is defined
+	// (should not produce a warning)
+	util.assertLint("function test(a) { var t = a; };", {
 		messages : [ ]
 	});
 }

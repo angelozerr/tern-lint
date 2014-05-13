@@ -71,11 +71,17 @@
       Identifier: function(node, state, c) {
         var type = infer.expressionType({node: node, state: state});
 
-        if(type.isEmpty()) {
-          // The type of the identifier cannot be determined, which means
-          // that the identifier probably doesn't exist.
+        if(type.originNode != null) {
+          // The node is defined somewhere (could be this node),
+          // regardless of whether or not the type is known.
+        } else if(type.isEmpty()) {
+          // The type of the identifier cannot be determined,
+          // and the origin is unknown.
           var error = makeError(node, "Unknown identifier '" + getName(node) + "'");
           messages.push(error);
+        } else {
+          // Even though the origin node is unknown, the type is known.
+          // This is typically the case for built-in identifiers (e.g. window or document).
         }
       },
       // Detects function calls.
