@@ -17,13 +17,19 @@
   }
 
   function makeVisitors(query, file, messages) {
-    function makeError(node, msg) {
+	
+	function addMessage(node, msg, severity) {
+      var error = makeError(node, msg, severity);
+      messages.push(error);		
+	}
+	
+    function makeError(node, msg, severity) {
       var pos = getPosition(node);
       return {
           message: msg,
           from: outputPos(query, file, pos.start),
           to: outputPos(query, file, pos.end),
-          severity : 'warning'
+          severity : severity
       };
     }
 
@@ -70,10 +76,8 @@
           // properties.
 
           // Also, the expression may be valid even if the parent type is unknown,
-          // since the inference engine cannot detect the type in all cases.
-          
-          var error = makeError(node, "Unknown property '" + getName(node) + "'");
-          messages.push(error);
+          // since the inference engine cannot detect the type in all cases.          
+          addMessage(node, "Unknown property '" + getName(node) + "'", 'warning');          
         }
       },
       // Detects top-level identifiers, e.g. the object in
@@ -87,8 +91,7 @@
         } else if(type.isEmpty()) {
           // The type of the identifier cannot be determined,
           // and the origin is unknown.
-          var error = makeError(node, "Unknown identifier '" + getName(node) + "'");
-          messages.push(error);
+          addMessage(node, "Unknown identifier '" + getName(node) + "'", 'warning');        	
         } else {
           // Even though the origin node is unknown, the type is known.
           // This is typically the case for built-in identifiers (e.g. window or document).
@@ -106,9 +109,10 @@
           // If one of them is a function, type.getFunctionType() will return it.
           var fnType = type.getFunctionType();
           if(fnType == null) {
-            var error = makeError(node, "'" + getName(node) + "' is not a function");
-            error.severity = "error";
-            messages.push(error);
+            addMessage(node, "'" + getName(node) + "' is not a function", 'error');        	        	  
+          } else if (fnType.lint) {
+        	  // custom lint for function
+        	  fnType.lint(node, addMessage);
           }
         }
       }
@@ -140,14 +144,9 @@
     takesFile: true,
     run: function(server, query, file) {
       try {
-        var messages = [];
-        var ast = file.ast;
+        var messages = [], ast = file.ast, state = file.scope;
         var visitors = makeVisitors(query, file, messages);
-
-        var state = file.scope;
-
         walk.simple(ast, visitors, base, state);
-
         return {messages: messages};
       } catch(err) {
         console.error(err.stack);
