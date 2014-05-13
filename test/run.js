@@ -69,5 +69,28 @@ exports['test issue2'] = function() {
 					});
 }
 
+exports['test variables inside functions'] = function() {
+	util.assertLint("function test() { var a = {len: 5}; var len = a.len; }\nfunction b() { }", {
+		messages : [ ]
+	});
+
+	util.assertLint("function b() { }\nfunction test() { var d = 5; var a = {len: 5}; var len = a.len; }", {
+		messages : [ ]
+	});
+}
+
+
+exports['test functions parameters'] = function() {
+	// util.assertLint("function test(a) { var len = a.len; }; test({len: 5});", {
+	// 	messages : [ ]
+	// });
+
+	util.assertLint("function test(a) { var len = a.len; };", {
+		messages : [ ]
+	});
+}
+
+
+
 if (module == require.main)
 	require('test').run(exports)
