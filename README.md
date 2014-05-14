@@ -24,10 +24,11 @@ If you are Eclipse user, you can use the tern lint.js too. See [Tern IDE & Valid
 
 ![Eclipse & TernLint](https://github.com/angelozerr/tern.lint/wiki/images/EclipseIDE_TernLintOverview.png)
 
-## with 
+## with Emacs 
 
-https://camo.githubusercontent.com/a0aee78d66237ddc65e4ab1291ccbb496f52fd25/687474703a2f2f692e696d6775722e636f6d2f723335615244512e706e67
-https://github.com/katspaugh/tern-lint.el
+![Emacs & TernLint](https://camo.githubusercontent.com/a0aee78d66237ddc65e4ab1291ccbb496f52fd25/687474703a2f2f692e696d6775722e636f6d2f723335615244512e706e67)
+
+See [tern-lint.el](https://github.com/katspaugh/tern-lint.el) for more information.
 
 ## with other editor
 
