@@ -12,17 +12,22 @@ tern.lint
 
 See [Integration](https://github.com/angelozerr/tern.lint/wiki/Integration) for more information to integrate the tern lint plugin in your editor.
 
-## With CodeMirror : 
+## with CodeMirror : 
 
 Here a screenshot with tern lint and CodeMirror :
 
 ![CodeMirror & TernLint](https://github.com/angelozerr/tern.lint/wiki/images/CodeMirrorAddon_TernLintOverview.png)
 
-## With Eclipse :
+## with Eclipse :
 
 If you are Eclipse user, you can use the tern lint.js too. See [Tern IDE & Validation](https://github.com/angelozerr/tern.java/wiki/Tern-&-Validation)
 
 ![Eclipse & TernLint](https://github.com/angelozerr/tern.lint/wiki/images/EclipseIDE_TernLintOverview.png)
+
+## with 
+
+https://camo.githubusercontent.com/a0aee78d66237ddc65e4ab1291ccbb496f52fd25/687474703a2f2f692e696d6775722e636f6d2f723335615244512e706e67
+https://github.com/katspaugh/tern-lint.el
 
 ## with other editor
 
