@@ -72,8 +72,11 @@ CodeMirror.tern.addDef = function(def) {
 <article>
 <h2>Tern Lint Demo</h2>
 <form><textarea id="code" name="code">
-var a = [];
-var len = a.length();  // Error, since length is not a function
+var obj = {
+    test: 1
+};
+var key = 'test';
+obj[key]; // assigned to 1 in the literal above
 </textarea></p>
 
 <p>Demonstrates integration of <a href="http://ternjs.net/">Tern</a>
