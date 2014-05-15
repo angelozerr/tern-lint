@@ -143,5 +143,16 @@ exports['test assignment of unknown value'] = function() {
 	});
 }
 
+exports['test dynamic properties (bracket notation)'] = function() {
+	util.assertLint("var obj = { test: 1 }; var key = 'test'; var val1 = obj[key]; var val2 = obj['test'];", {
+		messages : [ ]
+	});
+
+	util.assertLint("var obj = { test: function() {} }; var key = 'test'; obj[key](); obj['test']();", {
+		messages : [ ]
+	});
+}
+
+
 if (module == require.main)
 	require('test').run(exports)
