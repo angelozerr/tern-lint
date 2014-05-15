@@ -66,6 +66,12 @@
       MemberExpression: function(node, state, c) {
         var type = infer.expressionType({node: node, state: state});
         var parentType = infer.expressionType({node: node.object, state: state});
+
+        if(node.computed) {
+          // Bracket notation.
+          // Until we figure out how to handle these properly, we ignore these nodes.
+          return;
+        }
         
         if(!parentType.isEmpty() && type.isEmpty()) {
           // The type of the property cannot be determined, which means
