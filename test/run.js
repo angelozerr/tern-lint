@@ -111,12 +111,34 @@ exports['test properties on functions parameters'] = function() {
 
 
 exports['test assignment of unknown value'] = function() {
+
+	util.assertLint("var a = {}; function test(p) { var b = a.b; };", {
+		messages : [ {
+			"message": "Unknown property 'b'",
+			"from": 41,
+			"to": 42,
+			"severity": "warning"} ]
+	});
+
 	// The type of a.t is unknown, but it is still a valid property.
-	util.assertLint("var a = {}; function test(p) { a.t = p; var b = a.t; };", {
+	util.assertLint("var a = {}; function test(p) { a.t = p; var b = a.t; }", {
 		messages : [ ]
 	});
 
-	util.assertLint("var a = {t: 5}; function test(p) { a.t = p; };", {
+	util.assertLint("var a = {}; function test(p) { a.t = p; }", {
+		messages : [ ]
+	});
+
+	// This should only contain a warning for `notdefined`, not for b = a.val.
+	util.assertLint("function A() {}; A.prototype.val = notdefined; var a = new A(); var b = a.val;", {
+		messages : [ {
+			"message": "Unknown identifier 'notdefined'",
+			"from": 35,
+			"to": 45,
+			"severity": "warning"} ]
+	});
+
+	util.assertLint("var a = {t: 5}; function test(p) { a.t = p; }", {
 		messages : [ ]
 	});
 }

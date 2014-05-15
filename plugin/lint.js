@@ -81,12 +81,15 @@
           var propertyDefined = false;
 
           // In some cases the type is unknown, even if the property is defined
-          if(parentType.props) {
-            // We cannot use parentType.getProp(), since this could return
-            // something even for undefined properties.
-            if(node.property.name in parentType.props) {
-              propertyDefined = true;
-            }
+          if(parentType.types) {
+            // We cannot use parentType.hasProp or parentType.props - in the case of an AVal,
+            // this may contain properties that are not really defined.
+            parentType.types.forEach(function(potentialType) {
+              // Obj#hasProp checks the prototype as well
+              if(typeof potentialType.hasProp == 'function' && potentialType.hasProp(node.property.name, true)) {
+                propertyDefined = true;
+              }
+            });
           }
 
           if(!propertyDefined) {
