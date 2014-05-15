@@ -76,8 +76,25 @@
           // properties.
 
           // Also, the expression may be valid even if the parent type is unknown,
-          // since the inference engine cannot detect the type in all cases.          
-          addMessage(node, "Unknown property '" + getName(node) + "'", 'warning');          
+          // since the inference engine cannot detect the type in all cases.
+
+          var propertyDefined = false;
+
+          // In some cases the type is unknown, even if the property is defined
+          if(parentType.types) {
+            // We cannot use parentType.hasProp or parentType.props - in the case of an AVal,
+            // this may contain properties that are not really defined.
+            parentType.types.forEach(function(potentialType) {
+              // Obj#hasProp checks the prototype as well
+              if(typeof potentialType.hasProp == 'function' && potentialType.hasProp(node.property.name, true)) {
+                propertyDefined = true;
+              }
+            });
+          }
+
+          if(!propertyDefined) {
+            addMessage(node, "Unknown property '" + getName(node) + "'", 'warning');
+          }
         }
       },
       // Detects top-level identifiers, e.g. the object in
