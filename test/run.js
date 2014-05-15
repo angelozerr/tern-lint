@@ -110,5 +110,16 @@ exports['test properties on functions parameters'] = function() {
 }
 
 
+exports['test assignment of unknown value'] = function() {
+	// The type of a.t is unknown, but it is still a valid property.
+	util.assertLint("var a = {}; function test(p) { a.t = p; var b = a.t; };", {
+		messages : [ ]
+	});
+
+	util.assertLint("var a = {t: 5}; function test(p) { a.t = p; };", {
+		messages : [ ]
+	});
+}
+
 if (module == require.main)
 	require('test').run(exports)

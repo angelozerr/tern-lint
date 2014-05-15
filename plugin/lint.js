@@ -76,8 +76,22 @@
           // properties.
 
           // Also, the expression may be valid even if the parent type is unknown,
-          // since the inference engine cannot detect the type in all cases.          
-          addMessage(node, "Unknown property '" + getName(node) + "'", 'warning');          
+          // since the inference engine cannot detect the type in all cases.
+
+          var propertyDefined = false;
+
+          // In some cases the type is unknown, even if the property is defined
+          if(parentType.props) {
+            // We cannot use parentType.getProp(), since this could return
+            // something even for undefined properties.
+            if(node.property.name in parentType.props) {
+              propertyDefined = true;
+            }
+          }
+
+          if(!propertyDefined) {
+            addMessage(node, "Unknown property '" + getName(node) + "'", 'warning');
+          }
         }
       },
       // Detects top-level identifiers, e.g. the object in
