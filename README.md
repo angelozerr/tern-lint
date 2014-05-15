@@ -63,7 +63,7 @@ and the **JSON response** of the tern server :
 	
 ## Validation rules
 
-Today tern lint is very basic, it manage those validation rules : 
+tern lint validate JS files but not syntax errors, it manages those validation rules : 
 
  * unknown property. (ex : document.getElementByIdXXX  where getElementByIdXXX is an unknown property of document)
  * unknown identifier. (ex : a = '' where a is an unknown identifier)
