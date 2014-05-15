@@ -17,9 +17,19 @@ exports['test Unknown property'] = function() {
 			"severity" : "warning"
 		} ]
 	}, [ "browser" ]);
+	// Unknown property as error
+	var options = {"rules" : {"UnknownProperty" : {"severity" : "error"}}};
+	util.assertLint("var elt = document.getElementByIdXXX('myId');", {
+		messages : [ {
+			"message" : "Unknown property 'getElementByIdXXX'",
+			"from" : 19,
+			"to" : 36,
+			"severity" : "error"
+		} ]
+	}, [ "browser" ], options);	
 }
 
-exports['test Unknown property + identifier'] = function() {
+exports['test Unknown identifier'] = function() {
 	// without 'browser' def, document is not known
 	// The check does not continue to getElementById, since
 	// the real cause is that document is undefined.
@@ -31,6 +41,16 @@ exports['test Unknown property + identifier'] = function() {
 			"severity" : "warning"
 		} ]
 	});
+	// Unknown identifier as error
+	var options = {"rules" : {"UnknownIdentifier" : {"severity" : "error"}}};
+	util.assertLint("var elt = document.getElementById('myId');", {
+		messages : [ {
+			"message" : "Unknown identifier 'document'",
+			"from" : 10,
+			"to" : 18,
+			"severity" : "error"
+		} ]
+	}, null, options);	
 }
 
 exports['test issue1'] = function() {
@@ -44,6 +64,16 @@ exports['test issue1'] = function() {
 			"severity" : "error"
 		} ]
 	}, [ "ecma5" ]);
+	// Not a function as warning
+	var options = {"rules" : {"NotAFunction" : {"severity" : "warning"}}};
+	util.assertLint("var a = [];\nvar len = a.length();", {
+		messages : [ {
+			"message" : "'length' is not a function",
+			"from" : 24,
+			"to" : 30,
+			"severity" : "warning"
+		} ]
+	}, [ "ecma5" ], options);	
 	// without ecma5, var 'a' is not an array.
 	util.assertLint("var a = [];\nvar len = a.length();", {
 		messages : [ {

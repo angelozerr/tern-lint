@@ -64,6 +64,8 @@
     var visitors = {
       // Detects expressions of the form `object.property`
       MemberExpression: function(node, state, c) {
+        var rule = getRule("UnknownProperty");
+        if (!rule) return;
         var type = infer.expressionType({node: node, state: state});
         var parentType = infer.expressionType({node: node.object, state: state});
 
@@ -99,13 +101,15 @@
           }
 
           if(!propertyDefined) {
-            addMessage(node, "Unknown property '" + getName(node) + "'", 'warning');
+            addMessage(node, "Unknown property '" + getName(node) + "'", rule.severity);
           }
         }
       },
       // Detects top-level identifiers, e.g. the object in
       // `object.property` or just `object`.
       Identifier: function(node, state, c) {
+        var rule = getRule("UnknownIdentifier");
+        if (!rule) return;
         var type = infer.expressionType({node: node, state: state});
 
         if(type.originNode != null) {
@@ -114,7 +118,7 @@
         } else if(type.isEmpty()) {
           // The type of the identifier cannot be determined,
           // and the origin is unknown.
-          addMessage(node, "Unknown identifier '" + getName(node) + "'", 'warning');        	
+          addMessage(node, "Unknown identifier '" + getName(node) + "'", rule.severity);        	
         } else {
           // Even though the origin node is unknown, the type is known.
           // This is typically the case for built-in identifiers (e.g. window or document).
@@ -124,6 +128,8 @@
       // `node.callee` is the expression (Identifier or MemberExpression)
       // the is called as a function.
       CallExpression: function(node, state, c) {
+        var rule = getRule("NotAFunction");
+        if (!rule) return;    	  
         var type = infer.expressionType({node: node.callee, state: state});
         if(!type.isEmpty()) {
           // If type.isEmpty(), it is handled by MemberExpression/Identifier already.
@@ -132,7 +138,7 @@
           // If one of them is a function, type.getFunctionType() will return it.
           var fnType = type.getFunctionType();
           if(fnType == null) {
-            addMessage(node, "'" + getName(node) + "' is not a function", 'error');        	        	  
+            addMessage(node, "'" + getName(node) + "' is not a function", rule.severity);        	        	  
           } else if (fnType.lint) {
         	  // custom lint for function
         	  fnType.lint(node, addMessage);
@@ -185,11 +191,37 @@
 	lintsForDef.push({path: path, prop: prop, lint: lint});
   };
   
-  tern.registerPlugin("lint", function(server) {	    
+  var defaultRules = {
+    "UnknownProperty" : {"severity" : "warning"},
+    "UnknownIdentifier" : {"severity" : "warning"},
+    "NotAFunction" : {"severity" : "error"}
+  }
+  
+  tern.registerPlugin("lint", function(server, options) {	
+    server._lint = {
+      rules: getRules(options)	
+    };
     return {
     	passes: {postLoadDef: postLoadDef}
     };
   });
+  
+  function getRules(options) {
+    var rules = {};
+    for(var ruleName in defaultRules) {
+      if (options && options.rules && options.rules[ruleName] && options.rules[ruleName].severity) {
+    	rules[ruleName] =  options.rules[ruleName];
+      }	else {
+      	rules[ruleName] = defaultRules[ruleName];
+      }
+    }
+    return rules;
+  }
+  
+  function getRule(ruleName) {
+    var cx = infer.cx(), server = cx.parent, rules = server._lint.rules;
+    return rules[ruleName];
+  }
   
   function postLoadDef(json) {
     var cx = infer.cx(), defName = json["!name"], lintsForDef = lints[defName];
