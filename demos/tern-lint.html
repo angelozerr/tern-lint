@@ -38,7 +38,8 @@ CodeMirror.tern.addDef = function(def) {
   <script src="ternjs/tern/lib/def.js"></script>
   <script src="ternjs/tern/lib/comment.js"></script>
   <script src="ternjs/tern/lib/infer.js"></script>
-
+  <script src="ternjs/tern/plugin/requirejs.js"></script>
+  
   <!-- Official CodeMirror Tern addon -->
   <script src="codemirror/addon/tern/tern.js"></script>   
   
@@ -1408,7 +1409,7 @@ overview.</p>
   //var server;
   //getURL("http://ternjs.net/defs/ecma5.json", function(err, code) {
   //  if (err) throw new Error("Request for ecma5.json: " + err);
-  var server = new CodeMirror.TernServer({defs: defs, plugins:{"lint":"../"}});
+  var server = new CodeMirror.TernServer({defs: defs, plugins:{"lint":"../", "requirejs" : "../"}});
     editor.setOption("extraKeys", {
       "Ctrl-Space": function(cm) { server.complete(cm); },
       "Ctrl-I": function(cm) { server.showType(cm); },
@@ -1421,100 +1422,6 @@ overview.</p>
     editor.on("cursorActivity", function(cm) { server.updateArgHints(cm); });
   //});
     
-  function onAngularTypeChanged() {
-	  var angularType = document.getElementById('angularType').value;
-	  
-	  var indexDot = angularType.indexOf('.');
-	  	if (indexDot != -1) {
-	  		document.getElementById('angularField').value = angularType.substring(indexDot + 1, angularType.length);
-	  	}  
-  }
-  
-  function completions() {
-	
-	var angularType = document.getElementById('angularType').value;
-	var angularField = document.getElementById('angularField').value;
-	var useAngularModule = document.getElementById('useAngularModule').checked;
-	
-  	var files = [];
-  	files.push({type: "full",
-                    name: "[doc]",
-                    text: editor.getValue()});
-
-  	var scope = {};
-  	if (angularType != 'module') {
-  		if (useAngularModule) {
-  	  		scope.module = 'Demo';
-  		}  		
-  		if (angularType != 'controller') {
-	  		scope.controllers = [];
-  			if (useAngularModule) {
-  				scope.controllers.push('SlaveController');
-  			} else {
-  				scope.controllers.push('TodoCtrl');
-  			}
-  			angularType = 'model';
-  	  	}
-  	}        
-  	//if (angularField.slice('todo.')) {
-  		scope.props = {};
-  		scope.props.name = "name";
-  	
-  	var query = {type: "angular", 
-  			     subtype: "completions",
-  			     files: ["[doc]"],
-  			     angularTypes: [angularType],
-  				 expression: angularField,
-  				 scope: scope
-				};
-  	        
-  	var doc = {query: query, files: files};
-  	server.server.request(doc, function(error, response) {
-  		alert(JSON.stringify(response));
-  	});
-  	
-  	}
-
-  function definition() {
-		
-	var angularType = document.getElementById('angularType').value;
-	var angularField = document.getElementById('angularField').value;
-	var useAngularModule = document.getElementById('useAngularModule').checked;
-	
-  	var files = [];
-  	files.push({type: "full",
-                    name: "[doc]",
-                    text: editor.getValue()});
-
-  	var scope = {};
-  	if (angularType != 'module') {
-  		if (useAngularModule) {
-  	  		scope.module = 'Demo';
-  		}  		
-  		if (angularType != 'controller') {
-  			if (useAngularModule) {
-  				scope.controller = 'SlaveController';
-  			} else {
-  				scope.controller = 'TodoCtrl';
-  			}
-  			angularType = 'model';
-  	  	}
-  	}        
-  	
-  	var query = {type: "angular", 
-  			     subtype: "definition",
-  			     files: ["[doc]"],
-  				 angularType: angularType,
-  				 expression: angularField,
-  				 scope: scope
-				};
-  	        
-  	var doc = {query: query, files: files};
-  	server.server.request(doc, function(error, response) {
-  		alert(JSON.stringify(response));
-  	});
-  	
-  	}
 </script>
 
   </article>
