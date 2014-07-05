@@ -33,11 +33,11 @@
       };
     }
 
-    function getName(node) {
+    function getNodeName(node) {
       if(node.callee) {
         // This is a CallExpression node.
         // We get the position of the function name.
-        return getName(node.callee);
+        return getNodeName(node.callee);
       } else if(node.property) {
         // This is a MemberExpression node.
         // We get the name of the property.
@@ -59,6 +59,17 @@
         return node.property;
       }
       return node;
+    }
+    
+    function compareType(expectedType, actualType) {
+      if (!expectedType) return true;
+      if (!actualType) return false;
+      return expectedType.proto.name === actualType.proto.name; 
+    }
+    
+    function getTypeName(type) {
+      if (!type) return "Unknown type";
+      return type.proto.name;
     }
 
     var visitors = {
@@ -101,7 +112,7 @@
           }
 
           if(!propertyDefined) {
-            addMessage(node, "Unknown property '" + getName(node) + "'", rule.severity);
+            addMessage(node, "Unknown property '" + getNodeName(node) + "'", rule.severity);
           }
         }
       },
@@ -118,7 +129,7 @@
         } else if(type.isEmpty()) {
           // The type of the identifier cannot be determined,
           // and the origin is unknown.
-          addMessage(node, "Unknown identifier '" + getName(node) + "'", rule.severity);        	
+          addMessage(node, "Unknown identifier '" + getNodeName(node) + "'", rule.severity);        	
         } else {
           // Even though the origin node is unknown, the type is known.
           // This is typically the case for built-in identifiers (e.g. window or document).
@@ -128,8 +139,8 @@
       // `node.callee` is the expression (Identifier or MemberExpression)
       // the is called as a function.
       CallExpression: function(node, state, c) {
-        var rule = getRule("NotAFunction");
-        if (!rule) return;    	  
+        var notAFunctionRule = getRule("NotAFunction"), invalidArgument = getRule("InvalidArgument");
+        if (!notAFunctionRule && !invalidArgument) return;    	  
         var type = infer.expressionType({node: node.callee, state: state});
         if(!type.isEmpty()) {
           // If type.isEmpty(), it is handled by MemberExpression/Identifier already.
@@ -138,10 +149,26 @@
           // If one of them is a function, type.getFunctionType() will return it.
           var fnType = type.getFunctionType();
           if(fnType == null) {
-            addMessage(node, "'" + getName(node) + "' is not a function", rule.severity);        	        	  
+            if (notAFunctionRule) addMessage(node, "'" + getNodeName(node) + "' is not a function", notAFunctionRule.severity);        	        	  
           } else if (fnType.lint) {
-        	  // custom lint for function
-        	  fnType.lint(node, addMessage);
+             // custom lint for function
+            fnType.lint(node, addMessage);
+          } else if (fnType.args) {
+            // validate parameters of the function 
+            if (!invalidArgument) return;
+            var actualArgs = node.arguments;
+            if (!actualArgs) return;//addMessage(c, "'" + getNodeName(c) + "' no args", invalidArgument.severity);
+            var expectedArgs = fnType.args;
+            for (var i = 0; i < expectedArgs.length; i++) {
+              var expectedArg = expectedArgs[i];
+              if (actualArgs.length > i) {
+                var actualNode = actualArgs[i];
+                var actualArg = infer.expressionType({node: actualNode, state: state});
+                if (!compareType(expectedArg.getType(), actualArg.getType())) {
+                  addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
+                }
+              }              
+            }
           }
         }
       }
@@ -194,7 +221,8 @@
   var defaultRules = {
     "UnknownProperty" : {"severity" : "warning"},
     "UnknownIdentifier" : {"severity" : "warning"},
-    "NotAFunction" : {"severity" : "error"}
+    "NotAFunction" : {"severity" : "error"},
+    "InvalidArgument" : {"severity" : "error"}
   }
   
   tern.registerPlugin("lint", function(server, options) {	

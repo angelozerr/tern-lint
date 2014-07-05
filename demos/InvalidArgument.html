@@ -72,9 +72,24 @@ CodeMirror.tern.addDef = function(def) {
 <article>
 <h2>Tern Lint Demo</h2>
 <form><textarea id="code" name="code">
-function f() {
-  x = this;
-}
+var id = "100";
+document.getElementById(id);
+
+document.getElementById(100);
+document.getElementById("id");
+
+var b = true;
+document.addEventListener("", b, true)
+
+var f = function() {};
+document.addEventListener("", f, true)
+
+new Date().setHours("hours")
+new Date().setHours(10)
+
+function test(a) { var t = a; }; test('something');
+test(10);
+
 </textarea></p>
 
 <p>Demonstrates integration of <a href="http://ternjs.net/">Tern</a>

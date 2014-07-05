@@ -183,6 +183,24 @@ exports['test dynamic properties (bracket notation)'] = function() {
 	});
 }
 
+exports['test Invalid Argument'] = function() {
+  // id is string => OK 
+  util.assertLint("var elt = document.getElementById('100');", {
+          messages : []  
+  }, [ "browser" ]);  
+  // id is string => OK 
+  util.assertLint("var id = '100'; var elt = document.getElementById(id);", {
+          messages : []  
+  }, [ "browser" ]);
+  // id is number although it should be string 
+  util.assertLint("var elt = document.getElementById(100);", {
+          messages : [ {
+            "message": "Invalid argument at 1: cannot convert from Number.prototype to String.prototype",
+            "from": 34,
+            "to": 37,
+            "severity": "error"}]
+  }, [ "browser" ]);
+}
 
 if (module == require.main)
 	require('test').run(exports)
