@@ -68,6 +68,7 @@ tern lint validate JS files but not syntax errors, it manages those validation r
  * unknown property. (ex : document.getElementByIdXXX  where getElementByIdXXX is an unknown property of document)
  * unknown identifier. (ex : a = '' where a is an unknown identifier)
  * not a function (ex : var a = []; a.length() is not valid because length of array is not a function)
+ * invalid argument (ex : document.getElementById(1000) is not valid because 1000 is a number and not a string)
   
 See [Validation rules](https://github.com/angelozerr/tern.lint/wiki/Validation-Rules) for more informations.
 
