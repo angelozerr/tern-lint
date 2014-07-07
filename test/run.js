@@ -224,7 +224,7 @@ exports['test Invalid Argument'] = function() {
   util.assertLint("var elt = document.getElementById(null);", {
           messages : []
   }, [ "browser" ]);
-  // Unknown argument => trhow error widh Unknown identifier
+  // Unknown argument => throw error widh Unknown identifier
   util.assertLint("var elt = document.getElementById(xxx);", {
           messages : [{
             "message" : "Unknown identifier 'xxx'",
@@ -233,6 +233,22 @@ exports['test Invalid Argument'] = function() {
             "severity" : "warning"
     }]
   }, [ "browser" ]); 
+  
+  // isEqualNode waits Node.prototype and document.getElementById returns Element.prototype which extends Node.prototype => OK
+  util.assertLint("document.getElementById('id1').isEqualNode(document.getElementById('id2'))", {
+          messages : []
+  }, [ "browser" ]); 
+  
+  // New expression works like Call expression
+  util.assertLint("new Array('');", {
+    messages : [{
+      "message" : "Invalid argument at 1: cannot convert from String.prototype to Number.prototype",
+      "from" : 10,
+      "to" : 12,
+      "severity" : "error"
+    }]
+  }, [ "ecma5" ]); 
+  
 }
 
 if (module == require.main)
