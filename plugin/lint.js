@@ -63,7 +63,7 @@
     
     function compareType(expectedType, actualType) {
       if (!expectedType) return true;
-      if (!actualType) return false;
+      if (!actualType) return true;
       return expectedType.proto.name === actualType.proto.name; 
     }
     

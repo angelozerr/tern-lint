@@ -200,6 +200,39 @@ exports['test Invalid Argument'] = function() {
             "to": 37,
             "severity": "error"}]
   }, [ "browser" ]);
+  // id is number although it should be string 
+  util.assertLint("var id = 100; var elt = document.getElementById(id);", {
+          messages : [ {
+            "message": "Invalid argument at 1: cannot convert from Number.prototype to String.prototype",
+            "from": 48,
+            "to": 50,
+            "severity": "error"}]
+  }, [ "browser" ]);
+  // listener must be a function => OK 
+  util.assertLint("var f = function() {}; document.addEventListener('click', f, true)", {
+          messages : []
+  }, [ "browser" ]);  
+  // listener must be a function => OK 
+  util.assertLint("var f = true {}; document.addEventListener('click', f, true)", {
+          messages : [{
+            "message": "Invalid argument at 2: cannot convert from Boolean.prototype to Function.prototype",
+            "from": 52,
+            "to": 53,
+            "severity": "error"}]
+  }, [ "browser" ]);
+  // null argument => OK 
+  util.assertLint("var elt = document.getElementById(null);", {
+          messages : []
+  }, [ "browser" ]);
+  // Unknown argument => trhow error widh Unknown identifier
+  util.assertLint("var elt = document.getElementById(xxx);", {
+          messages : [{
+            "message" : "Unknown identifier 'xxx'",
+            "from" : 34,
+            "to" : 37,
+            "severity" : "warning"
+    }]
+  }, [ "browser" ]); 
 }
 
 if (module == require.main)
