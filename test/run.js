@@ -212,12 +212,12 @@ exports['test Invalid Argument'] = function() {
   util.assertLint("var f = function() {}; document.addEventListener('click', f, true)", {
           messages : []
   }, [ "browser" ]);  
-  // listener must be a function => OK 
-  util.assertLint("var f = true {}; document.addEventListener('click', f, true)", {
+  // listener must be a function but argument is a boolean 
+  util.assertLint("var b = true; document.addEventListener('click', b, true)", {
           messages : [{
             "message": "Invalid argument at 2: cannot convert from Boolean.prototype to Function.prototype",
-            "from": 52,
-            "to": 53,
+            "from": 49,
+            "to": 50,
             "severity": "error"}]
   }, [ "browser" ]);
   // null argument => OK 
