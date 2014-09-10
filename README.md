@@ -3,7 +3,7 @@ tern-lint
 
 [![Build Status](https://secure.travis-ci.org/angelozerr/tern-lint.png)](http://travis-ci.org/angelozerr/tern-lint)
 
-**tern.lint** provides :
+**tern-lint** provides :
 
  * the tern lint plugin `lint.js` to validate JS files.
  * the CodeMirror lint addon `tern-lint.js` which uses tern lint plugin `lint.js`
