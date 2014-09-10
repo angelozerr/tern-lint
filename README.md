@@ -1,7 +1,7 @@
-tern.lint
+tern-lint
 =========
 
-[![Build Status](https://secure.travis-ci.org/angelozerr/tern.lint.png)](http://travis-ci.org/angelozerr/tern.lint)
+[![Build Status](https://secure.travis-ci.org/angelozerr/tern-lint.png)](http://travis-ci.org/angelozerr/tern-lint)
 
 **tern.lint** provides :
 
@@ -78,5 +78,5 @@ The basic structure of the project is given in the following way:
 
 * `demos/` demos with tern lint plugin which use CodeMirror.
 * `codemirror/` contains the CodeMirror lint addon `tern-lint.js`, which is an implementation of CodeMirror lint addon with tern.lint.
-* `plugin/` contains the tern lint plugin `lint.js`
+* `lint.js/` the tern lint plugin.
 * `test/` contains test of tern lint plugin. 
