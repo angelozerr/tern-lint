@@ -184,6 +184,12 @@ exports['test dynamic properties (bracket notation)'] = function() {
 }
 
 exports['test Invalid Argument'] = function() {
+  // argument must be {foo: number, bar: number} 
+  util.assertLint("function a(x) {x.foo = 1;x.bar=2}; var z = a({baz:3});", {
+          messages : [{
+          
+          }]          
+  });  
   // id is string => OK 
   util.assertLint("var elt = document.getElementById('100');", {
           messages : []  
