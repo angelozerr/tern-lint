@@ -11,10 +11,12 @@ var browser = JSON.parse(fs
 		.readFileSync(resolve("node_modules/tern/defs/browser.json")), "utf8");
 var ecma5 = JSON.parse(fs
 		.readFileSync(resolve("node_modules/tern/defs/ecma5.json")), "utf8");
-
+var chrome_apps = JSON.parse(fs.readFileSync(resolve("test/fixtures/chrome_apps.json")), "utf8");
+        
 var allDefs = {
 	browser : browser,
-	ecma5 : ecma5
+	ecma5 : ecma5,
+    chrome_apps : chrome_apps
 };
 
 function createServer(defs, options) {

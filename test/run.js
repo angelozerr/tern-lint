@@ -184,12 +184,44 @@ exports['test dynamic properties (bracket notation)'] = function() {
 }
 
 exports['test Invalid Argument'] = function() {
-  // argument must be {foo: number, bar: number} 
-  util.assertLint("function a(x) {x.foo = 1;x.bar=2}; var z = a({baz:3});", {
-          messages : [{
-          
-          }]          
-  });  
+
+	// #JSObjectLiteralInParameter
+	// a Property that is unknown: anInvalidOption
+	util.assertLint("chrome.app.window.create('index.html', {anInvalidOption: 'foo'});", {
+					messages : [{
+					"message":"Invalid argument at 2: anInvalidOption is not a property in CreateWindowOptions",
+					"from":40,
+					"to":55,
+					"severity":"error"
+					}]
+	}, [ "chrome_apps" ]);
+	// a Property that does not type check, (hidden should be a bool)
+	util.assertLint("chrome.app.window.create('index.html', {hidden: 'foo'});", {
+					messages : [{
+						"message":"Invalid argument at 2: cannot convert from String.prototype to Boolean.prototype",
+						"from":48,
+						"to":53,
+						"severity":"error"
+					}]
+	}, [ "chrome_apps" ]);
+	// a Property that is of the correct type => OK
+	util.assertLint("chrome.app.window.create('index.html', {id: 'fooID'});", {
+					messages : []
+	}, [ "chrome_apps" ]);
+	// multiple Properties of the correct type => OK
+	util.assertLint("chrome.app.window.create('index.html', {id: 'fooID',hidden: true});", {
+					messages : []
+	}, [ "chrome_apps" ]);
+	// one bad one mixed in
+	util.assertLint("chrome.app.window.create('index.html', {id: 'fooID', oho: 34, hidden: true});", {
+					messages : [{
+					"message":"Invalid argument at 2: oho is not a property in CreateWindowOptions",
+					"from":53,
+					"to":56,
+					"severity":"error"
+					}]
+	}, [ "chrome_apps" ]);
+
   // id is string => OK 
   util.assertLint("var elt = document.getElementById('100');", {
           messages : []  
