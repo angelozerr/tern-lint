@@ -104,7 +104,7 @@
               var actualNode = actualArgs[i];
               var actualArg = infer.expressionType({node: actualNode, state: state});
               if (!compareType(expectedArg.getType(), actualArg.getType())) {
-                // Type check a JavaScript object literal in a parameter, see tests labelled #JSObjectLiteralInParameter
+                // Type check an object literal in a parameter, see tests labelled #JSObjectLiteralInParameter
                 // often an object literal is used to express bunch of optional arguments to a function
                 // this has a low overhead because Object Literals (typed as a function argument) rarely have more than 20 properties
                 if (actualNode.type === "ObjectExpression") {
@@ -121,6 +121,10 @@
                     }
                     prop_count++;
                   }
+                /* TODO: handle the case where the identifier points to an object literal
+                } else if (actualNode.type === "Identifier") {
+                  findDef()
+                */
                 } else
                   addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
               }
