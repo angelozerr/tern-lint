@@ -76,32 +76,23 @@
       return false;
     }
     
-    // from tern.js
-    function findExprType(srv, query, file, expr) {
-      var type = null;
-      if (expr) {
-        infer.resetGuessing();
-        type = infer.expressionType(expr);
-      }
-      if (srv.passes["typeAt"]) {
-        var pos = resolvePos(file, query.end);
-        srv.passes["typeAt"].forEach(function(hook) {
-          type = hook(file, pos, expr, type);
-        });
-      }
-      if (!type) throw ternError("No type found at the given position.");
-      return type;
-    };
-
-    
-    function checkPropInObject(prop,object,i,key,value,expectedTypeObject,actualType,expectedType,invalidArgument) {
-      if (! ( prop in object ) ) {
-        addMessage(key, "Invalid argument at " + (i+1) + ": " + prop + " is not a property in " + getTypeName(expectedTypeObject), invalidArgument.severity);
-      } else {
-        // test that each object literal prop is the correct type
-        if (getTypeName(expectedType.proto.props[prop].getType()) !== getTypeName(actualType)) {
-          addMessage(value, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualType) + " to " + getTypeName(expectedType.proto.props[prop].getType()), invalidArgument.severity);
+    function checkPropsInObject(i, node, expectedArg, actualObj, invalidArgument) {
+      var
+        object = expectedArg.proto.props,
+        expectedArgType = expectedArg.getType(),
+        props = actualObj.props,
+        prop_count = 0;
+      for (var prop in props) {
+        if (! ( prop in object ) ) {
+          addMessage(node.properties[prop_count].key, "Invalid argument at " + (i+1) + ": " + prop + " is not a property in " + getTypeName(expectedArgType), invalidArgument.severity);
+        } else {
+          // test that each object literal prop is the correct type
+          var actualType = actualObj.props[prop].getType();
+          if (getTypeName(expectedArgType.proto.props[prop].getType()) !== getTypeName(actualType)) {
+            addMessage(node.properties[prop_count].value, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualType) + " to " + getTypeName(object[prop].getType()), invalidArgument.severity);
+          }
         }
+        prop_count++;
       }
     }
     function validateCallExpression(node, state, c) {
@@ -139,44 +130,18 @@
                                           ,"Function.prototype"
                                           ,"String.prototype"
                                           ]
-                if ( actualNode.type === "ObjectExpression" && (notCheckableOLTypes.indexOf(getTypeName(expectedArg.getType())) === -1)) {
-                  var prop_count = 0;
-                  for (var prop in actualArg.props) {
-                    // test that each object literal prop exists in expectedArg.proto.props
-                    checkPropInObject(prop,expectedArg.proto.props,i
-                        ,actualNode.properties[prop_count].key
-                        ,actualNode.properties[prop_count].value
-                        ,expectedArg.getType()
-                        ,actualArg.props[prop].getType()
-                        ,expectedArg
-                        ,invalidArgument);
-                    prop_count++;
-                  }
+                var canBeOL = notCheckableOLTypes.indexOf(getTypeName(expectedArg.getType())) === -1;
+                if ( actualNode.type === "ObjectExpression" && canBeOL) {
+                  checkPropsInObject(i, actualNode, expectedArg, actualArg, invalidArgument);
                 // handle the case where the identifier points to an object literal
-                } else if ((actualNode.type === "Identifier") && (notCheckableOLTypes.indexOf(getTypeName(expectedArg.getType())) === -1)) {
+                } else if ((actualNode.type === "Identifier") && canBeOL) {
                   // logic from findDef
                   // first we have to find the object literal
                   var query = {type: "definition", start: actualNode.start, end: actualNode.end};
                   var expr = tern.findQueryExpr(file, query);
-                  var type = findExprType(server, query, file, expr);
-                  /*
-                  if (infer.didGuess()) {
-                    addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
-                    return;
-                  }
-                  */
+                  var type = infer.expressionType(expr);
                   var objExpr = type.types[0];
-                  var prop_count = 0;
-                  for (var prop in objExpr.props) {
-                    checkPropInObject(prop,expectedArg.proto.props,i
-                      ,objExpr.originNode.properties[prop_count].key
-                      ,objExpr.originNode.properties[prop_count].value
-                      ,expectedArg.getType()
-                      ,objExpr.props[prop].getType()
-                      ,expectedArg
-                      ,invalidArgument);
-                      prop_count++;
-                  }
+                  checkPropsInObject(i, objExpr.originNode, expectedArg, objExpr, invalidArgument);
                 } else
                   addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
               }

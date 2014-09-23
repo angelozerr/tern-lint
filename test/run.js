@@ -213,6 +213,13 @@ exports['test type-checking of object literals declared before a function with a
   util.assertLint("var obj5 = {id: 'fooID', oho: 34, hidden: true}; chrome.app.window.create('index.html', obj5);", {
     "messages":[{"message":"Invalid argument at 2: oho is not a property in CreateWindowOptions","from":25,"to":28,"severity":"error"}]
   }, [ "chrome_apps" ]);
+
+  // id is forward declared object literal but it should be string
+  util.assertLint("var lit = {foo: 400}; document.getElementById(lit);", {
+          messages : [ {
+            "message":"Invalid argument at 1: cannot convert from Object.prototype to String.prototype","from":46,"to":49,"severity":"error"
+          }]
+  }, [ "browser" ]);
 }
 
 exports['test Invalid Argument'] = function() {
