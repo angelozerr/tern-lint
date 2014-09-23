@@ -139,7 +139,6 @@ exports['test properties on functions parameters'] = function() {
 	});
 }
 
-
 exports['test assignment of unknown value'] = function() {
 
 	util.assertLint("var a = {}; function test(p) { var b = a.b; };", {
@@ -183,8 +182,55 @@ exports['test dynamic properties (bracket notation)'] = function() {
 	});
 }
 
+exports['test type-checking of object literals declared before a function with a known type'] = function() {
+  
+  // declaration before the argument
+  util.assertLint("var x = {id: 'fooID',hidden: true}; chrome.app.window.create('index.html', x);", {
+          messages : []
+  }, [ "chrome_apps" ]);
+  
+  // A Property that is unknown: anInvalidOption
+  util.assertLint("var obj1 = {anInvalidOption: 'foo'}; chrome.app.window.create('index.html', obj1);", {
+    "messages":[{"message":"Invalid argument at 2: anInvalidOption is not a property in CreateWindowOptions","from":12,"to":27,"severity":"error"}]
+  }, [ "chrome_apps" ]);
+  
+  // A Property that does not type check, (hidden should be a bool)
+  util.assertLint("var obj2 = {hidden: 'foo'}; chrome.app.window.create('index.html', obj2);", {
+    "messages":[{"message":"Invalid argument at 2: cannot convert from String.prototype to Boolean.prototype","from":20,"to":25,"severity":"error"}]
+  }, [ "chrome_apps" ]);
+
+  // A Property that is of the correct type => OK
+  util.assertLint("var obj3 = {id: 'fooID'}; chrome.app.window.create('index.html', obj3);", {
+    messages : []
+  }, [ "chrome_apps" ]);
+  
+  // multiple Properties of the correct type => OK
+  util.assertLint("var obj4 = {id: 'fooID',hidden: true}; chrome.app.window.create('index.html', obj4);", {
+    messages : []
+  }, [ "chrome_apps" ]);
+  
+  // one bad one mixed in
+  util.assertLint("var obj5 = {id: 'fooID', oho: 34, hidden: true}; chrome.app.window.create('index.html', obj5);", {
+    "messages":[{"message":"Invalid argument at 2: oho is not a property in CreateWindowOptions","from":25,"to":28,"severity":"error"}]
+  }, [ "chrome_apps" ]);
+
+  // id is forward declared object literal but it should be string
+  util.assertLint("var lit = {foo: 400}; document.getElementById(lit);", {
+          messages : [ {
+            "message":"Invalid argument at 1: cannot convert from Object.prototype to String.prototype","from":46,"to":49,"severity":"error"
+          }]
+  }, [ "browser" ]);
+}
+
 exports['test Invalid Argument'] = function() {
 
+  // id is an object literal but it should be string 
+  util.assertLint("var elt = document.getElementById({foo: 400});", {
+          messages : [ {
+            "message":"Invalid argument at 1: cannot convert from Object.prototype to String.prototype","from":34,"to":44,"severity":"error"
+          }]
+  }, [ "browser" ]);  
+  
   // #JSObjectLiteralInParameter
   // a Property that is unknown: anInvalidOption
   util.assertLint("chrome.app.window.create('index.html', {anInvalidOption: 'foo'});", {
@@ -221,12 +267,8 @@ exports['test Invalid Argument'] = function() {
           "severity":"error"
           }]
   }, [ "chrome_apps" ]);
-  /* TODO
-  // declaration before the argument
-  util.assertLint("var x = {id: 'fooID',hidden: true}; chrome.app.window.create('index.html', x);", {
-          messages : []
-  }, [ "chrome_apps" ]);
-  */
+
+  
 
   // id is string => OK 
   util.assertLint("var elt = document.getElementById('100');", {
