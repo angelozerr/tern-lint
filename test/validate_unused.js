@@ -9,12 +9,14 @@ exports['test Unused variable'] = function() {
                   "message" : "Unused variable 'id1'",
                   "from" : 4,
                   "to" : 7,
-                  "severity" : "warning"
+                  "severity" : "warning",
+                  "file" : "test1.js"
                   },{
                   "message" : "Unused variable 'id4'",
                   "from" : 63,
                   "to" : 66,
-                  "severity" : "warning"
+                  "severity" : "warning",
+                  "file" : "test1.js"
           } ]
   }, [ "browser" ]);    
 }
@@ -29,13 +31,15 @@ exports['test Unused function'] = function() {
                   "message" : "Unused variable 'f'",
                   "from" : 4,
                   "to" : 5,
-                  "severity" : "warning"
+                  "severity" : "warning",
+                  "file" : "test1.js"
                   },
                   {
                     "message" : "Unused function 'f1'",
                     "from" : 54,
                     "to" : 56,
-                    "severity" : "warning"
+                    "severity" : "warning",
+                    "file" : "test1.js"
             }]
   }, [ "browser" ]);    
 }

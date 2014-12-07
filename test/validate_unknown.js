@@ -17,7 +17,8 @@ exports['test Unknown property'] = function() {
 			"message" : "Unknown property 'getElementByIdXXX'",
 			"from" : 19,
 			"to" : 36,
-			"severity" : "warning"
+			"severity" : "warning",
+			"file": "test1.js"
 		} ]
 	}, [ "browser" ], IGNORE_UNUSED_VAR);
 	// Unknown property as error
@@ -28,7 +29,8 @@ exports['test Unknown property'] = function() {
 			"message" : "Unknown property 'getElementByIdXXX'",
 			"from" : 19,
 			"to" : 36,
-			"severity" : "error"
+			"severity" : "error",
+                        "file": "test1.js"
 		} ]
 	}, [ "browser" ], options);	
 }
@@ -42,7 +44,8 @@ exports['test Unknown identifier'] = function() {
 			"message" : "Unknown identifier 'document'",
 			"from" : 10,
 			"to" : 18,
-			"severity" : "warning"
+			"severity" : "warning",
+                        "file": "test1.js"
 		} ]
 	}, null, IGNORE_UNUSED_VAR);
 	// Unknown identifier as error
@@ -53,7 +56,8 @@ exports['test Unknown identifier'] = function() {
 			"message" : "Unknown identifier 'document'",
 			"from" : 10,
 			"to" : 18,
-			"severity" : "error"
+			"severity" : "error",
+                        "file": "test1.js"
 		} ]
 	}, null, options);	
 }
@@ -66,7 +70,8 @@ exports['test issue1'] = function() {
 			"message" : "'length' is not a function",
 			"from" : 24,
 			"to" : 30,
-			"severity" : "error"
+			"severity" : "error",
+                        "file": "test1.js"
 		} ]
 	}, [ "ecma5" ], IGNORE_UNUSED_VAR);
 	// Not a function as warning
@@ -77,7 +82,8 @@ exports['test issue1'] = function() {
 			"message" : "'length' is not a function",
 			"from" : 24,
 			"to" : 30,
-			"severity" : "warning"
+			"severity" : "warning",
+                        "file": "test1.js"
 		} ]
 	}, [ "ecma5" ], options);	
 	// without ecma5, var 'a' is not an array.
@@ -86,7 +92,8 @@ exports['test issue1'] = function() {
 			"message" : "Unknown property 'length'",
 			"from" : 24,
 			"to" : 30,
-			"severity" : "warning"
+			"severity" : "warning",
+                        "file": "test1.js"
 		} ]
 	}, null, IGNORE_UNUSED_VAR);
 }
@@ -152,7 +159,8 @@ exports['test assignment of unknown value'] = function() {
 			"message": "Unknown property 'b'",
 			"from": 41,
 			"to": 42,
-			"severity": "warning"} ]
+			"severity": "warning",
+                        "file": "test1.js"} ]
 	}, null, IGNORE_UNUSED_VAR);
 
 	// The type of a.t is unknown, but it is still a valid property.
@@ -170,7 +178,8 @@ exports['test assignment of unknown value'] = function() {
 			"message": "Unknown identifier 'notdefined'",
 			"from": 35,
 			"to": 45,
-			"severity": "warning"} ]
+			"severity": "warning",
+                        "file": "test1.js"} ]
 	}, null, IGNORE_UNUSED_VAR);
 
 	util.assertLint("var a = {t: 5}; function test(p) { a.t = p; }", {

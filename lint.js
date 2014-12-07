@@ -38,7 +38,8 @@
           message: msg,
           from: outputPos(query, file, pos.start),
           to: outputPos(query, file, pos.end),
-          severity : severity
+          severity: severity,
+          file: file.name
       };
     }
 
