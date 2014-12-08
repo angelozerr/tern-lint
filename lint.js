@@ -330,6 +330,23 @@
     }
   });
 
+  tern.defineQueryType("lint-full", {
+    run: function(server, query) {
+      try {
+        var messages = [], files = server.files;
+        for (var i = 0; i < files.length; ++i) {
+          var file = files[i], ast = file.ast, state = file.scope;
+          var visitors = makeVisitors(server, query, file, messages);
+          walk.simple(ast, visitors, base, state);
+        }
+        return {messages: messages};
+      } catch(err) {
+        console.error(err.stack);
+        return {messages: []};
+      }
+    }
+  });
+  
   var lints = Object.create(null);
   tern.registerLint = function(name, lint) {
     lints[name] = lint;  
