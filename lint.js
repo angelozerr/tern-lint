@@ -57,6 +57,28 @@
       }
     }
 
+    function getNodeValue(node) {
+      if(node.callee) {
+        // This is a CallExpression node.
+        // We get the position of the function name.
+        return getNodeValue(node.callee);
+      } else if(node.property) {
+        // This is a MemberExpression node.
+        // We get the value of the property.
+        return node.property.value;
+      } else {
+        if (node.type === "Identifier") {
+          var query = {type: "definition", start: node.start, end: node.end};
+          var expr = tern.findQueryExpr(file, query);
+          var type = infer.expressionType(expr);
+          var objExpr = type.getType();
+          if (objExpr && objExpr.originNode) return getNodeValue(objExpr.originNode);
+          return null;
+        }          
+        return node.value;
+      }
+    }
+    
     function getPosition(node) {
       if(node.callee) {
         // This is a CallExpression node.
@@ -75,7 +97,17 @@
       if (!type) return "Unknown type";
       return type.proto.name;
     }
+    
+    function hasProto(expectedType, name) {
+      if (!expectedType) return false;
+      if(!expectedType.proto) return false;
+      return expectedType.proto.name === name;
+    }
 
+    function isRegexExpected(expectedType) {
+      return hasProto(expectedType, 'RegExp.prototype');
+    }
+    
     function compareType(expectedType, actualType) {
       if (!expectedType) return true;
       if (!actualType) return true;
@@ -134,36 +166,48 @@
           // validate parameters of the function 
           if (!invalidArgument) return;
           var actualArgs = node.arguments;
-          if (!actualArgs) return;//addMessage(c, "'" + getNodeName(c) + "' no args", invalidArgument.severity);
+          if (!actualArgs) return;
           var expectedArgs = fnType.args;
           for (var i = 0; i < expectedArgs.length; i++) {
             var expectedArg = expectedArgs[i];
             if (actualArgs.length > i) {
               var actualNode = actualArgs[i];
-              var actualArg = infer.expressionType({node: actualNode, state: state});
-              if (!compareType(expectedArg.getType(), actualArg.getType())) {
-                // Type check an object literal in a parameter, see tests labeled #JSObjectLiteralInParameter
-                // often an object literal is used to express bunch of optional arguments to a function
-                // this has a low overhead because Object Literals (typed as a function argument) rarely have more than 20 properties
-                var notCheckableOLTypes = ["Object.prototype", // because their would be no properties to check
-                                          ,"Boolean.prototype"
-                                          ,"Function.prototype"
-                                          ,"String.prototype"
-                                          ]
-                var canBeOL = notCheckableOLTypes.indexOf(getTypeName(expectedArg.getType())) === -1;
-                if ( actualNode.type === "ObjectExpression" && canBeOL) {
-                  checkPropsInObject(i, actualNode, expectedArg, actualArg, invalidArgument);
-                // handle the case where the identifier points to an object literal
-                } else if ((actualNode.type === "Identifier") && canBeOL) {
-                  // logic from findDef
-                  // first we have to find the object literal
-                  var query = {type: "definition", start: actualNode.start, end: actualNode.end};
-                  var expr = tern.findQueryExpr(file, query);
-                  var type = infer.expressionType(expr);
-                  var objExpr = type.types[0];
-                  checkPropsInObject(i, objExpr.originNode, expectedArg, objExpr, invalidArgument);
-                } else
-                  addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
+              if (isRegexExpected(expectedArg.getType())) {
+                var value = getNodeValue(actualNode);
+                if (value) {
+                  try {
+                    var regex = new RegExp(value);  
+                  } 
+                  catch(e) {
+                    addMessage(actualNode, "Invalid argument at " + (i+1) + ": " + e, invalidArgument.severity);  
+                  }
+                }
+              } else { 
+                var actualArg = infer.expressionType({node: actualNode, state: state});
+                if (!compareType(expectedArg.getType(), actualArg.getType())) {
+                  // Type check an object literal in a parameter, see tests labeled #JSObjectLiteralInParameter
+                  // often an object literal is used to express bunch of optional arguments to a function
+                  // this has a low overhead because Object Literals (typed as a function argument) rarely have more than 20 properties
+                  var notCheckableOLTypes = ["Object.prototype", // because their would be no properties to check
+                                            ,"Boolean.prototype"
+                                            ,"Function.prototype"
+                                            ,"String.prototype"
+                                            ]
+                  var canBeOL = notCheckableOLTypes.indexOf(getTypeName(expectedArg.getType())) === -1;
+                  if ( actualNode.type === "ObjectExpression" && canBeOL) {
+                    checkPropsInObject(i, actualNode, expectedArg, actualArg, invalidArgument);
+                  // handle the case where the identifier points to an object literal
+                  } else if ((actualNode.type === "Identifier") && canBeOL) {
+                    // logic from findDef
+                    // first we have to find the object literal
+                    var query = {type: "definition", start: actualNode.start, end: actualNode.end};
+                    var expr = tern.findQueryExpr(file, query);
+                    var type = infer.expressionType(expr);
+                    var objExpr = type.types[0];
+                    checkPropsInObject(i, objExpr.originNode, expectedArg, objExpr, invalidArgument);
+                  } else
+                    addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
+                }
               }
             }      
           }
