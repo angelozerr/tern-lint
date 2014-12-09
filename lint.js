@@ -34,13 +34,14 @@
 	
     function makeError(node, msg, severity) {
       var pos = getPosition(node);
-      return {
+      var error = {
           message: msg,
           from: outputPos(query, file, pos.start),
           to: outputPos(query, file, pos.end),
-          severity: severity,
-          file: file.name
+          severity: severity
       };
+      if (!query.groupByFiles) error.file = file.name;
+      return error;
     }
 
     function getNodeName(node) {
@@ -377,12 +378,13 @@
   tern.defineQueryType("lint-full", {
     run: function(server, query) {
       try {
-        var messages = [], files = server.files;
+        var messages = [], files = server.files, groupByFiles = query.groupByFiles == true;
         for (var i = 0; i < files.length; ++i) {
-          var file = files[i], ast = file.ast, state = file.scope;
-          var visitors = makeVisitors(server, query, file, messages);
+          var messagesFile = groupByFiles ? [] : messages, file = files[i], ast = file.ast, state = file.scope;
+          var visitors = makeVisitors(server, query, file, messagesFile);
           walk.simple(ast, visitors, base, state);
-        }
+          if (groupByFiles) messages.push({file:file.name, messages: messagesFile});
+        }        
         return {messages: messages};
       } catch(err) {
         console.error(err.stack);
