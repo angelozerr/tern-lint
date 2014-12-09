@@ -319,7 +319,7 @@
         if (!rule) return;
         var type = infer.expressionType({node: node, state: state});
 
-        if(type.originNode != null) {
+        if(type.originNode != null || type.origin != null) {
           // The node is defined somewhere (could be this node),
           // regardless of whether or not the type is known.
         } else if(type.isEmpty()) {

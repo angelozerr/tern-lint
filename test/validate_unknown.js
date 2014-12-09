@@ -197,4 +197,10 @@ exports['test dynamic properties (bracket notation)'] = function() {
 	}, null, IGNORE_UNUSED_VAR);
 }
 
+exports['test undefined (issue 35)'] = function() {
+  util.assertLint("undefined", {
+          messages : []
+  }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+}
+
 if (module == require.main) require('test').run(exports)
