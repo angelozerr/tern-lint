@@ -1,11 +1,11 @@
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     return mod(require("../lib/infer"), require("../lib/tern"), require("../lib/comment"),
-               require("acorn/util/walk"), require("acorn/acorn"));
+               require("acorn/dist/walk"));
   if (typeof define == "function" && define.amd) // AMD
-    return define(["../lib/infer", "../lib/tern", "../lib/comment", "acorn/util/walk", "acorn/acorn"], mod);
-  mod(tern, tern, tern.comment, acorn.walk, acorn);
-})(function(infer, tern, comment, walk, acorn) {
+    return define(["../lib/infer", "../lib/tern", "../lib/comment", "acorn/dist/walk"], mod);
+  mod(tern, tern, tern.comment, acorn.walk);
+})(function(infer, tern, comment, walk) {
   "use strict";
 
   var SetDoc = infer.constraint("doc", {
@@ -25,12 +25,10 @@
     var field = this.fields[name] = new infer.AVal;
     return field;
   };
-  Injector.prototype.set = function(name, val, doc, node, depth, fieldType) {
+  Injector.prototype.set = function(name, val, doc, node, depth) {
     if (name == "$scope" || depth && depth > 10) return;
     var field = this.fields[name] || (this.fields[name] = new infer.AVal);
     if (!depth) field.local = true;
-    field.type = fieldType;
-    field.fnType = val.fnType;
     if (!field.origin) field.origin = infer.cx().curOrigin;
     if (typeof node == "string" && !field.span) field.span = node;
     else if (node && typeof node == "object" && !field.originNode) field.originNode = node;
@@ -85,7 +83,6 @@
     } else {
       fnType.propagate(new infer.IsCallee(infer.cx().topScope, deps, null, result));
     }
-    result.fnType = fnType;
     return result;
   }
 
@@ -94,60 +91,17 @@
       var mod = self.getType();
       if (mod && argNodes && argNodes[argN])
         applyWithInjection(mod, args[argN], argNodes[argN]);
-        if (args[argN].argNames && args[argN].argNames[0] == '$rootScope') {
-          mod.rootScope = args[argN].args[0];
-        }
     };
   });
 
-  infer.registerFunction("angular_regFieldCallController", function(self, args, argNodes) {
-    angular_regFieldCall(self, args, argNodes, 'controller')
-  });
-
-  infer.registerFunction("angular_regFieldCallDirective", function(self, args, argNodes) {
-    var mod = self.getType(), fn = null;
-    if (mod && argNodes && argNodes.length > 1) {
-      var retval = args[1].retval;
-      if (retval) {
-        var type = retval.getType();
-        if (type && type.props && type.props.controller && type.props.controller.getType()) {
-          var fn = args[1].retval.getType().props.controller.getType();
-          var node = fn.originNode;        
-          
-          var result = applyWithInjection(mod, fn, node);
-          if (mod.injector && argNodes[0].type == "Literal")
-            mod.injector.set(argNodes[0].value + '#controller', result, argNodes[0].angularDoc, argNodes[0], null, 'controller');
-          
-          fn = args[1].retval.getType();
-        } else  if (type && type.props && type.props.link && type.props.link.getType()) {
-          var fn = args[1].retval.getType().props.link.getType();
-          var node = fn.originNode;        
-          
-          var result = applyWithInjection(mod, fn, node);
-          if (mod.injector && argNodes[0].type == "Literal")
-            mod.injector.set(argNodes[0].value + '#link', result, argNodes[0].angularDoc, argNodes[0], null, 'controller');
-          
-          fn = args[1].retval.getType();
-        } 
-      }
-      
-      if (!mod.directives) mod.directives = {};
-      mod.directives[argNodes[0].value] = {"originNode": argNodes[0], "type" : fn};
-    }
-  });
-  
   infer.registerFunction("angular_regFieldCall", function(self, args, argNodes) {
-    angular_regFieldCall(self, args, argNodes);
-  });
-  
-  function angular_regFieldCall(self, args, argNodes, callType) {
     var mod = self.getType();
     if (mod && argNodes && argNodes.length > 1) {
       var result = applyWithInjection(mod, args[1], argNodes[1]);
       if (mod.injector && argNodes[0].type == "Literal")
-        mod.injector.set(argNodes[0].value, result, argNodes[0].angularDoc, argNodes[0], null, callType);
+        mod.injector.set(argNodes[0].value, result, argNodes[0].angularDoc, argNodes[0]);
     }
-  };
+  });
 
   infer.registerFunction("angular_regFieldNew", function(self, args, argNodes) {
     var mod = self.getType();
@@ -163,50 +117,7 @@
     if (mod && mod.injector && argNodes && argNodes[0] && argNodes[0].type == "Literal" && args[1])
       mod.injector.set(argNodes[0].value, args[1], argNodes[0].angularDoc, argNodes[0]);
   });
-  
-  infer.registerFunction("angular_callFilter", function(self, args, argNodes) {
-    var mod = self.getType();
-    if (mod && argNodes && argNodes[0] && argNodes[0].type == "Literal") {
-      if (!mod.filters) mod.filters = {};
-      mod.filters[argNodes[0].value] = {"originNode": argNodes[0], "fnType" : argNodes[1]};
-    }
-  });
-  
-  infer.registerFunction("angular_callFactory", function(self, args, argNodes) {
-    var mod = self.getType();
-    if (mod && argNodes && argNodes.length > 1) {
-      var result = applyWithInjection(mod, args[1], argNodes[1]);
-      if (mod.injector && argNodes[0].type == "Literal") {
-        mod.injector.set(argNodes[0].value, result, argNodes[0].angularDoc, argNodes[0], null);
-        if (!mod.factories) mod.factories = {};
-        mod.factories[argNodes[0].value] = {"originNode": argNodes[0]};
-      }
-    }
-  });
-  
-  infer.registerFunction("angular_callProvider", function(self, args, argNodes) {
-    var mod = self.getType();
-    if (mod && argNodes && argNodes.length > 1) {
-      var result = applyWithInjection(mod, args[1], argNodes[1]);
-      if (mod.injector && argNodes[0].type == "Literal") {
-        mod.injector.set(argNodes[0].value, result, argNodes[0].angularDoc, argNodes[0], null);
-        if (!mod.providers) mod.providers = {};
-        mod.providers[argNodes[0].value] = {"originNode": argNodes[0]};
-      }
-    }
-  });
 
-  infer.registerFunction("angular_callService", function(self, args, argNodes) {
-    var mod = self.getType();
-    if (mod && argNodes && argNodes.length > 1) {
-      var result = applyWithInjection(mod, args[1], argNodes[1], true);
-      if (mod.injector && argNodes[0].type == "Literal")
-        mod.injector.set(argNodes[0].value, result, argNodes[0].angularDoc, argNodes[0]);
-      if (!mod.services) mod.services = {};
-      mod.services[argNodes[0].value] = {"originNode": argNodes[0]};
-    }
-  });
-  
   function arrayNodeToStrings(node) {
     var strings = [];
     if (node && node.type == "ArrayExpression")
@@ -223,13 +134,12 @@
     return ngDefs && ngDefs.Module.getProp("prototype").getType();
   }
 
-  function declareMod(name, includes, originNode) {
+  function declareMod(name, includes) {
     var cx = infer.cx(), data = cx.parent._angular;
     var proto = moduleProto(cx);
     var mod = new infer.Obj(proto || true);
     if (!proto) data.nakedModules.push(mod);
     mod.origin = cx.curOrigin;
-    mod.originNode = originNode;
     mod.injector = new Injector();
     mod.metaData = {includes: includes};
     for (var i = 0; i < includes.length; ++i) {
@@ -256,7 +166,7 @@
     if (typeof name == "string")
       mod = infer.cx().parent._angular.modules[name];
     if (!mod)
-      mod = declareMod(name, arrayNodeToStrings(argNodes && argNodes[1]), argNodes[0]);
+      mod = declareMod(name, arrayNodeToStrings(argNodes && argNodes[1]));
     return mod;
   });
 
@@ -346,7 +256,6 @@
       var m;
       if (m = path.match(/^!ng\.([^\.]+)\._inject_([^\.]+)^/)) {
         var mod = mods[m[1].replace(/`/g, ".")];
-        console.log(mod.injector.fields, m[2]);
         var field = mod.injector.fields[m[2]];
         var data = state.types[path];
         if (field.span) data.span = field.span;
@@ -393,6 +302,83 @@
         preventDefault: "fn()",
         defaultPrevented: "bool"
       },
+      directiveObj: {
+        multiElement: {
+          "!type": "bool",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-multielement-",
+          "!doc": "When this property is set to true, the HTML compiler will collect DOM nodes between nodes with the attributes directive-name-start and directive-name-end, and group them together as the directive elements. It is recommended that this feature be used on directives which are not strictly behavioural (such as ngClick), and which do not manipulate or replace child nodes (such as ngInclude)."
+        },
+        priority: {
+          "!type": "number",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-priority-",
+          "!doc": "When there are multiple directives defined on a single DOM element, sometimes it is necessary to specify the order in which the directives are applied. The priority is used to sort the directives before their compile functions get called. Priority is defined as a number. Directives with greater numerical priority are compiled first. Pre-link functions are also run in priority order, but post-link functions are run in reverse order. The order of directives with the same priority is undefined. The default priority is 0."
+        },
+        terminal: {
+          "!type": "bool",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-terminal-",
+          "!doc": "If set to true then the current priority will be the last set of directives which will execute (any directives at the current priority will still execute as the order of execution on same priority is undefined). Note that expressions and other directives used in the directive's template will also be excluded from execution."
+        },
+        scope: {
+          "!type": "?",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-scope-",
+          "!doc": "If set to true, then a new scope will be created for this directive. If multiple directives on the same element request a new scope, only one new scope is created. The new scope rule does not apply for the root of the template since the root of the template always gets a new scope. If set to {} (object hash), then a new 'isolate' scope is created. The 'isolate' scope differs from normal scope in that it does not prototypically inherit from the parent scope. This is useful when creating reusable components, which should not accidentally read or modify data in the parent scope."
+        },
+        bindToController: {
+          "!type": "bool",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-bindtocontroller-",
+          "!doc": "When an isolate scope is used for a component (see above), and controllerAs is used, bindToController: true will allow a component to have its properties bound to the controller, rather than to scope. When the controller is instantiated, the initial values of the isolate scope bindings are already available."
+        },
+        controller: {
+          "!type": "fn()",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-require-",
+          "!doc": "Controller constructor function. The controller is instantiated before the pre-linking phase and it is shared with other directives (see require attribute). This allows the directives to communicate with each other and augment each other's behavior."
+        },
+        require: {
+          "!type": "string",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-controller-",
+          "!doc": "Require another directive and inject its controller as the fourth argument to the linking function. The require takes a string name (or array of strings) of the directive(s) to pass in. If an array is used, the injected argument will be an array in corresponding order. If no such directive can be found, or if the directive does not have a controller, then an error is raised."
+        },
+        controllerAs: {
+          "!type": "string",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-controlleras-",
+          "!doc": "Controller alias at the directive scope. An alias for the controller so it can be referenced at the directive template. The directive needs to define a scope for this configuration to be used. Useful in the case when directive is used as component."
+        },
+        restrict: {
+          "!type": "string",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-restrict-",
+          "!doc": "String of subset of EACM which restricts the directive to a specific directive declaration style. If omitted, the defaults (elements and attributes) are used. E - Element name (default): <my-directive></my-directive>. A - Attribute (default): <div my-directive='exp'></div>. C - Class: <div class='my-directive: exp;'></div>. M - Comment: <!-- directive: my-directive exp --> "
+        },
+        templateNamespace: {
+          "!type": "string",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-templatenamespace-",
+          "!doc": "String representing the document type used by the markup in the template. AngularJS needs this information as those elements need to be created and cloned in a special way when they are defined outside their usual containers like <svg> and <math>."
+        },
+        template: {
+          "!type": "string",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-template-",
+          "!doc": "HTML markup that may: Replace the contents of the directive's element (default). Replace the directive's element itself (if replace is true - DEPRECATED). Wrap the contents of the directive's element (if transclude is true)."
+        },
+        templateUrl: {
+          "!type": "string",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-templateurl-",
+          "!doc": "This is similar to template but the template is loaded from the specified URL, asynchronously."
+        },
+        transclude: {
+          "!type": "bool",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-transclude-",
+          "!doc": "Extract the contents of the element where the directive appears and make it available to the directive. The contents are compiled and provided to the directive as a transclusion function."
+        },
+        compile: {
+          "!type": "fn(tElement: +Element, tAttrs: +Attr)",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-transclude-",
+          "!doc": "The compile function deals with transforming the template DOM. Since most directives do not do template transformation, it is not used often."
+        },
+        link: {
+          "!type": "fn(scope: ?, iElement: +Element, iAttrs: +Attr, controller: ?, transcludeFn: fn())",
+          "!url": "https://docs.angularjs.org/api/ng/service/$compile#-link-",
+          "!doc": "The link function is responsible for registering DOM listeners as well as updating the DOM. It is executed after the template has been cloned. This is where most of the directive logic will be put."
+        }
+      },
       Module: {
         "!url": "http://docs.angularjs.org/api/angular.Module",
         "!doc": "Interface for configuring angular modules.",
@@ -411,20 +397,20 @@
           constant: "service.$provide.constant",
           controller: {
             "!type": "fn(name: string, constructor: fn()) -> !this",
-            "!effects": ["custom angular_regFieldCallController"],
+            "!effects": ["custom angular_regFieldCall"],
             "!url": "http://docs.angularjs.org/api/ng.$controllerProvider",
             "!doc": "Register a controller."
           },
           directive: {
-            "!type": "fn(name: string, directiveFactory: fn()) -> !this",
-            "!effects": ["custom angular_regFieldCallDirective"],
+            "!type": "fn(name: string, directiveFactory: fn() -> directiveObj) -> !this",
+            "!effects": ["custom angular_regFieldCall"],
             "!url": "http://docs.angularjs.org/api/ng.$compileProvider#directive",
             "!doc": "Register a new directive with the compiler."
           },
           factory: "service.$provide.factory",
           filter: {
             "!type": "fn(name: string, filterFactory: fn()) -> !this",
-            "!effects": ["custom angular_callFilter"],
+            "!effects": ["custom angular_callInject 1"],
             "!url": "http://docs.angularjs.org/api/ng.$filterProvider",
             "!doc": "Register filter factory function."
           },
@@ -828,19 +814,19 @@
           },
           factory: {
             "!type": "fn(name: string, providerFunction: fn()) -> !this",
-            "!effects": ["custom angular_callFactory"],
+            "!effects": ["custom angular_regFieldCall"],
             "!url": "http://docs.angularjs.org/api/AUTO.$provide#factory",
             "!doc": "A short hand for configuring services if only $get method is required."
           },
           provider: {
             "!type": "fn(name: string, providerType: fn()) -> !this",
-            "!effects": ["custom angular_callProvider"],
+            "!effects": ["custom angular_regFieldCall"],
             "!url": "http://docs.angularjs.org/api/AUTO.$provide#provider",
             "!doc": "Register a provider for a service."
           },
           service: {
             "!type": "fn(name: string, constructor: fn()) -> !this",
-            "!effects": ["custom angular_callService"],
+            "!effects": ["custom angular_regFieldNew"],
             "!url": "http://docs.angularjs.org/api/AUTO.$provide#provider",
             "!doc": "Register a provider for a service."
           },
@@ -1026,718 +1012,4 @@
       }
     }
   };
-  
-  // Angular query type.
-  
-  var querySubTypes = {
-    completions: {
-        run: findCompletions
-    },
-    definition: {
-      run: findDef
-    },
-    type: {
-        run: findType
-      }
-  }
-  
-  tern.defineQueryType("angular", {
-    run : function(server, query) {
-      var subtype = query.subtype;
-      if (subtype == null) throw ternError("missing .query.subtype field");
-      var angularTypes = query.angularTypes;
-      if (angularTypes == null) throw ternError("missing .query.angularTypes field");
-      var expression = query.expression;
-      if (expression == null) throw ternError("missing .query.expression field");
-      var scope = query.scope;
-      var _angular = server.cx.parent._angular;
-      if (_angular == null) throw ternError("missing server.cx.parent._angular");
-      
-      var files = [];
-      var filesName = query.files;
-      if (filesName) {
-        for ( var i = 0; i < filesName.length; i++) {
-          files.push(server.findFile(filesName[i]));
-        }
-      }
-
-      return querySubTypes[subtype].run(_angular, files, expression, scope,
-          angularTypes, query);
-    }
-  });
-  
-  // Utils
-  
-  function isBelongToFiles(origin, files) {
-    for ( var i = 0; i < files.length; i++) {
-      if (files[i].name === origin) return true;
-    }
-    return false;
-  }
-  
-  function startsWithString(str, token) {
-    return str.slice(0, token.length).toUpperCase() == token.toUpperCase();
-  }
-  
-  function getType(elt, name) {
-    if (elt.props && elt.props[name]) {
-      var obj = elt.props[name];
-      var type = obj.getType(true);
-      if (type) return type;
-    }
-    var forward = elt.forward;
-    if (forward) {
-      for ( var i = 0; i < forward.length; i++) {
-        var f = forward[i];
-        var prop = f.prop;
-        if (prop === name) {
-          var type = f.type;
-          if (type) return type;
-        }
-      }
-    }
-  }
-
-  function getArrType(elt, name) {
-    if (elt.props && elt.props[name]) {
-      var obj = elt.props[name];
-      var type = obj.getType(true);
-      if (type && type.name == 'Array') {
-        return type.getProp("<i>").getType();
-      }
-    }
-    var forward = elt.forward;
-    if (forward) {
-      for ( var i = 0; i < forward.length; i++) {
-        var f = forward[i];
-        var prop = f.prop;
-        if (prop === name) {
-          var type = f.type;
-          if (type && type.name == 'Array') {
-            var itemType = type.getProp("<i>").getType();
-            if (itemType) return itemType;
-          }          
-        }
-      }
-    }
-  }
-
-  // Angular Modules query
-  
-  function getModule(_angular, files, moduleName) {
-    var module = _angular.modules[moduleName];
-    if (module && isBelongToFiles(module.origin, files)) return module;      
-  }
-
-  function visitModules(_angular, files, c) {
-    for ( var moduleName in _angular.modules) {
-      var module = _angular.modules[moduleName];
-      if (isBelongToFiles(module.origin, files)) {
-        if (c(moduleName, module))
-          break;
-      }
-    }
-  }  
-  
-  // Angular Controllers query  
-
-  function getScopeArg(fnType) {
-    if (fnType) {
-      var argNames = fnType.argNames;
-      if (argNames) {
-        var args = fnType.args;
-        var arg = null;
-        for ( var j = 0; j < argNames.length; j++) {
-          if (argNames[j] == "$scope") {
-            return args[j];
-          }
-        }
-      }
-    }
-  }
-
-  function getScopeController(_angular, files, moduleName, controllerName) {
-    if (moduleName) {
-      var module = getModule(_angular, files, moduleName);
-      if (module) {
-        var fields = module.injector.fields, field = fields[controllerName];
-        if (field && field.type === "controller") {
-          var fnType = field.fnType;
-          return getScopeArg(fnType);          
-        }
-      }
-    } else {
-      var topScope = infer.cx().topScope, props = topScope.props;
-      if (props) {
-        var item = props[controllerName];
-        if (item && isBelongToFiles(item.origin, files) && item.types && item.types.length > 0) {
-          for ( var i = 0; i < item.types.length; i++) {
-            var fnType = item.types[i], scopeArg = getScopeArg(fnType);
-            if (scopeArg) return scopeArg;            
-          }          
-        }
-      }
-    }
-    return null;
-  }
-  
-  function visitModuleControllers(_angular, files, moduleName, c) {
-    var found = false;
-    var module = getModule(_angular, files, moduleName);
-    if (module) {
-      var fields = module.injector.fields;
-      for ( var fieldName in fields) {
-        var field = fields[fieldName];
-        if (field.type === "controller") {
-          var fnType = field.fnType;
-          var scopeArg = getScopeArg(fnType);
-          if (scopeArg) {
-            found = true;
-            if (c(fieldName, field.originNode, fnType, scopeArg)) break;
-          }
-        }
-      }
-    }
-    return found;
-  }
-  
-  function visitGlobalControllers(_angular, files, c) {
-    var topScope = infer.cx().topScope, stop = false, props = topScope.props;
-    if (props) {
-      for ( var prop in props) {
-        if (prop != "<i>") {
-          if (stop)
-            break;
-          var item = props[prop];
-          if (item.types && item.types.length > 0) {
-            for ( var i = 0; i < item.types.length; i++) {
-              if (stop)
-                break;
-              var fnType = item.types[i];
-              var scopeArg = getScopeArg(fnType);
-              if (scopeArg && isBelongToFiles(scopeArg.origin, files)) {
-                stop = (c(fnType.name, fnType.originNode.id, fnType,
-                    scopeArg));
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  function visitControllers(_angular, files, moduleName, c) {
-    var found = false;
-    if (moduleName) {
-      // find controllers of given module
-      found = visitModuleControllers(_angular, files, moduleName, c);
-    } 
-    if (!found) {
-      // find global controllers of the given file
-      visitGlobalControllers(_angular, files, c);
-    }
-  }
-
-  // Angular directive query
-
-  function visitDirectives(_angular, files, moduleName, c) {
-    if (moduleName) {
-      var module = getModule(_angular, files, moduleName);
-      if (module) {
-        var directives = module.directives;
-        if (directives) {
-          for ( var name in directives) {
-            var directive = directives[name];
-            if (c(name, directive.originNode, directive.type)) break;
-          }
-        }
-      }
-    }    
-  }
-  
-  // Angular filter query
-
-  function visitFilters(_angular, files, moduleName, c) {
-    if (moduleName) {
-      var module = getModule(_angular, files, moduleName);
-      if (module) {
-        var filters = module.filters;
-        if (filters) {
-          for ( var name in filters) {
-            var filter = filters[name];
-            if (c(name, filter.originNode, filter.type)) break;
-          }
-        }
-      }
-    }    
-  }
-
-  // Angular factory query
-
-  function visitFactories(_angular, files, moduleName, c) {
-    if (moduleName) {
-      var module = getModule(_angular, files, moduleName);
-      if (module) {
-        var factories = module.factories;
-        if (factories) {
-          for ( var name in factories) {
-            var factory = factories[name];
-            if (c(name, factory.originNode, factory.type)) break;
-          }
-        }
-      }
-    }    
-  }
-
-  // Angular provider query
-
-  function visitProviders(_angular, files, moduleName, c) {
-    if (moduleName) {
-      var module = getModule(_angular, files, moduleName);
-      if (module) {
-        var providers = module.providers;
-        if (providers) {
-          for ( var name in providers) {
-            var provider = providers[name];
-            if (c(name, provider.originNode, provider.type)) break;
-          }
-        }
-      }
-    }    
-  }
-
-  // Angular service query
-
-  function visitServices(_angular, files, moduleName, c) {
-    if (moduleName) {
-      var module = getModule(_angular, files, moduleName);
-      if (module) {
-        var services = module.services;
-        if (services) {
-          for ( var name in services) {
-            var service = services[name];
-            if (c(name, service.originNode, service.type)) break;
-          }
-        }
-      }
-    }    
-  }
-  // Angular model query
-  
-  function findModels(scopeCtrl, c) {
-          if (scopeCtrl) {
-                  var forward = scopeCtrl.forward;
-                  if (forward) {
-                          for ( var i = 0; i < forward.length; i++) {
-                                if (c(forward[i])) break;                               
-                        }
-                  }
-          }
-  }  
-  
-  function maybeSet(obj, prop, val) {
-    if (val != null) obj[prop] = val;
-  }
-  
-  function findCompletions(_angular, files, expression, scope, angularTypes,
-      query) {
-    var completions = [];
-    var result = {
-      "completions" : completions
-    }
-
-    var word = '', current = '', context = null;
-    var length = expression.length;
-    for ( var i = length - 1; i >= 0; i--) {
-      if (acorn.isIdentifierChar(expression.charCodeAt(i)))
-        current = expression.charAt(i) + current;
-      else if (expression.charAt(i) === '.') {
-        if (context)
-          context.unshift(current);
-        else {
-          word = current;
-          context = [];
-        }
-        current = '';
-      } else {
-        break;
-      }
-    }
-    if (context)
-      context.unshift(current);
-    else
-      word = current;
-    var end = expression.length, start = end - word.length;
-    result.start = start;
-    result.end = end;
-
-    if (query.caseInsensitive) word = word.toLowerCase();
-    var wrapAsObjs = true;//query.types || query.depths || query.docs || query.urls || query.origins;
-    
-    function createCompletionIfMatch(prop, obj, module, angularType) {
-      if (startsWithString(prop, word)) {
-        var completion = createCompletion(prop, obj, scope, query, module, angularType);
-        completions.push(completion);
-        return completion;
-      }
-    }
-
-    function completionDirectives(_angular, files, moduleName) {
-      visitDirectives(_angular, files, moduleName, function(name, node,
-          fnType) {
-        var completion = createCompletionIfMatch(name, fnType, moduleName, 'directive')
-        if (completion && fnType.originNode && fnType.originNode.properties) {
-          var properties = fnType.originNode.properties;
-          for ( var i = 0; i < properties.length; i++) {
-            var p = properties[i];
-            if (p.key.name === 'restrict' && p.value.type === 'Literal') {
-              completion.restrict = p.value.value;
-            }
-          }
-        }
-      });
-    }
-    var moduleName = scope ? scope.module : null, controllerName;
-    
-    function gather(prop, obj, depth, useObjAsVal) {
-      // 'hasOwnProperty' and such are usually just noise, leave them
-      // out when no prefix is provided.
-      //if (query.omitObjectPrototype !== false && obj == srv.cx.protos.Object && !word) return;
-      if (query.filter !== false && word &&
-          (query.caseInsensitive ? prop.toLowerCase() : prop).indexOf(word) != 0) return;
-
-      var val = null;
-      if (obj) val =  useObjAsVal ? obj : obj.props[prop];
-      if (!val) val = infer.ANull;
-
-      for (var i = 0; i < completions.length; ++i) {
-        var c = completions[i];
-        if ((wrapAsObjs ? c.name : c) == prop) {
-          if (c.type === '?' || c.type === '[?]') {
-            infer.resetGuessing();
-            var type = val.getType();            
-            //if (query.types)
-            c.type= infer.toString(type);
-          }
-          return;
-        }
-      }
-      var rec = wrapAsObjs ? {name: prop} : prop;
-      completions.push(rec);
-
-      //if (query.types || query.docs || query.urls || query.origins) {
-        infer.resetGuessing();
-        var type = val.getType();
-        rec.guess = infer.didGuess();
-        //if (query.types)
-          rec.type = infer.toString(type);
-        //if (query.docs)
-          maybeSet(rec, "doc", val.doc || type && type.doc);
-        //if (query.urls)
-          maybeSet(rec, "url", val.url || type && type.url);
-        //if (query.origins)
-          maybeSet(rec, "origin", val.origin || type && type.origin);
-      //}
-      if (query.depths) rec.depth = depth;
-      if (moduleName) rec.module = moduleName;
-      if (controllerName) rec.controller = controllerName;
-    }
-
-   for ( var i = 0; i < angularTypes.length; i++) {
-    var angularType = angularTypes[i];
- 
-      switch (angularType) {
-      case 'module':
-        // find modules
-        visitModules(_angular, files, function(moduleName, module) {
-          createCompletionIfMatch(moduleName, module, moduleName, 'module')
-        });
-        break;
-      case 'controller':
-        // find controller
-        visitControllers(_angular, files, moduleName, function(name, node,
-            fnType, scopeArg) {
-          createCompletionIfMatch(name, fnType, moduleName, 'controller')
-        });
-        break;
-      case 'directive':
-        // find directives for a module
-        completionDirectives(_angular, files, moduleName);
-        break;
-      case 'directives':
-        // find directives for the all modules.
-        for (var moduleName in _angular.modules) {
-          completionDirectives(_angular, files, moduleName);
-        }
-        break;
-      case 'filter':
-        // find filters for a module
-        visitFilters(_angular, files, moduleName, function(name, node,
-            fnType) {
-          createCompletionIfMatch(name, fnType, moduleName, 'filter')
-        });
-        break;  
-      case 'factory':
-        // find factories for a module
-        visitFactories(_angular, files, moduleName, function(name, node,
-            fnType) {
-          createCompletionIfMatch(name, fnType, moduleName, 'factory')
-        });
-        break;   
-      case 'provider':
-        // find providers for a module
-        visitProviders(_angular, files, moduleName, function(name, node,
-            fnType) {
-          createCompletionIfMatch(name, fnType, moduleName, 'provider')
-        });
-        break;
-      case 'service':
-        // find services for a module
-        visitServices(_angular, files, moduleName, function(name, node,
-            fnType) {
-          createCompletionIfMatch(name, fnType, moduleName, 'service')
-        });
-        break;                   
-      default:
-  
-        var controllers = scope.controllers, scopeProps = scope.props;
-        if (controllers) {
-          for ( var j = 0; j < controllers.length; j++) {
-            controllerName = controllers[j];
-            var scopeCtrl = getScopeController(_angular, files, moduleName,
-                controllerName);
-            if (scopeCtrl) {
-              if (context) {
-                var root = scopeCtrl;
-                for ( var i = 0; i < context.length; i++) {
-                  var prop = context[i];
-                  if (scopeProps && scopeProps[prop] && scopeProps[prop].repeat) {
-                    var arrProp = scopeProps[prop].repeat; // case when ngRepeat;
-                    root = getArrType(root, arrProp);
-                  } else {
-                    root = getType(root, prop)
-                  }
-                  if (!root)
-                    break;
-                }
-                if (root) infer.forAllPropertiesOf(root, gather);
-              } else {
-                if (scopeProps) {
-                  for ( var prop in scopeProps) {
-                    if (startsWithString(prop, word)) {
-                      var obj = null;
-                      if (scopeProps[prop].repeat) {
-                        var arrProp = scopeProps[prop].repeat; // case when ngRepeat;
-                        obj = getArrType(scopeCtrl, arrProp);                      
-                      }
-                      gather(prop, obj, null, true);
-                    }
-                  }
-                }
-                
-                var scopeType = scopeCtrl.getType(true);
-                if (scopeType) infer.forAllPropertiesOf(scopeType, gather);
-                else {
-                  findModels(scopeCtrl, function(forward) {
-                    var prop = forward.prop;
-                    if (prop && forward.type) {
-                      gather(prop, forward.type, null, true);
-                    }
-                  });
-                }
-              }
-            }
-          }
-        }
-        
-        if (!context && scopeProps) {
-          // case when ngModel defines a simple variable (which cannot be defined in the $scope).
-          for ( var prop in scopeProps) {
-              if (!scopeProps[prop].repeat) gather(prop, null, null, true);
-          }
-        }
-        // $rootScope of module
-        if (moduleName) {
-          var module = getModule(_angular, files, moduleName)
-          if (module && module.rootScope) {
-            infer.forAllPropertiesOf(module.rootScope, gather);
-            module.rootScope.guessProperties(gather);
-          }
-        }
-        break;
-      }
-    }
-    return result;
-  }
-  
-  function createCompletion(name, node, scope, query, module, angularType) {
-          var completion = {"name" : name};
-          if (node) {
-                  var type = infer.toString(node);
-                  if (type) completion.type = type;
-                  var origin = node.origin;
-                  if (origin) completion.origin = origin;
-          } else {
-                  completion.type = "?";
-          }
-          if (module) completion.module = module;
-          if (angularType) completion.angularType = angularType;     
-          return completion;
-  }
-  
-  function findDef(_angular, files, expression, scope, angularTypes, query) {
-          var angularType = angularTypes[0];
-          var node = null;
-          switch (angularType) {
-                case 'module':
-                        // find modules
-                        visitModules(_angular, files, function(moduleName, module) {
-                                if (moduleName == expression) {
-                                        node = module.originNode;
-                                        return true;
-                                }
-                        });               
-                        break;
-                case 'controller':
-                  var moduleName = scope ? scope.module : null;
-                        visitControllers(_angular, files, moduleName, function(name, n, fnType, scopeArg) {
-                                if (name == expression) {
-                                        node = n;
-                                        return true;
-                                }
-                        });
-                        break;
-                case 'directive':
-                  var moduleName = scope ? scope.module : null;
-                  visitDirectives(_angular, files, moduleName, function(name, n, fnType) {
-                    if (name == expression) {
-                      node = n;
-                      return true;
-                    }
-                  });
-                  break; 
-                case 'filter':
-                  var moduleName = scope ? scope.module : null;
-                  visitFilters(_angular, files, moduleName, function(name, n, fnType) {
-                    if (name == expression) {
-                      node = n;
-                      return true;
-                    }
-                  });
-                  break;  
-                case 'factory':
-                  var moduleName = scope ? scope.module : null;
-                  visitFactories(_angular, files, moduleName, function(name, n, fnType) {
-                    if (name == expression) {
-                      node = n;
-                      return true;
-                    }
-                  });
-                  break;
-                case 'provider':
-                  var moduleName = scope ? scope.module : null;
-                  visitProviders(_angular, files, moduleName, function(name, n, fnType) {
-                    if (name == expression) {
-                      node = n;
-                      return true;
-                    }
-                  });
-                  break;       
-                case 'service':
-                  var moduleName = scope ? scope.module : null;
-                  visitServices(_angular, files, moduleName, function(name, n, fnType) {
-                    if (name == expression) {
-                      node = n;
-                      return true;
-                    }
-                  });
-                  break;                  
-                default:
-                  var moduleName = scope.module;
-                var controllerName = 'TODO';
-                findModels(_angular, files, moduleName, controllerName, function(forward) {
-                                var prop = forward.prop;
-                                if (prop == expression) {
-                                        node = forward;
-                                        return true;
-                                }
-                        });
-                        break;
-          }
-          if (node) {
-                  return {file: node.sourceFile.name, start: node.start, end: node.end};
-          }
-          return {};
-  }
-  
-
-
-      function findType(_angular, files, expression, scope, angularTypes, query) {
-        var angularType = angularTypes[0];
-        var type, name, origin = null;
-        switch (angularType) {
-        case 'module':
-          // find modules
-          visitModules(_angular, files, function(moduleName, module) {
-            if (moduleName == expression) {
-              name = moduleName;
-              type = module;
-              return true;
-            }
-          });
-          break;
-        case 'controller':
-          var moduleName = scope.module;
-          visitControllers(_angular, files, moduleName, function(n, node,
-              fnType, scopeArg) {
-            if (n == expression) {
-              name = n;
-              type = fnType;
-              return true;
-            }
-          });
-          break;
-        case 'directive':
-          var moduleName = scope.module;
-          visitDirectives(_angular, files, moduleName, function(n, node,
-              fnType) {
-            if (n == expression) {
-              name = n;
-              type = fnType;
-              return true;
-            }
-          });
-          break;
-          
-        default:
-          var moduleName = scope.module;
-          var controllerName = 'TODO';
-          findModels(_angular, files, moduleName, controllerName, function(
-              forward) {
-            var prop = forward.prop;
-            if (prop == expression) {
-              name = prop;
-              type = forward.type;
-              return true;
-            }
-          });
-          break;
-        }
-        if (type) {
-          return {
-            type : infer.toString(type),
-            name : name,
-            origin : type.origin
-          }
-        }
-        return {};
-      }
-  
-  
-  function ternError(msg) {
-    var err = new Error(msg);
-    err.name = "TernError";
-    return err;
-  }
-  
 });
