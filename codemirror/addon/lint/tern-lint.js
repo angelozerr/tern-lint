@@ -1,5 +1,7 @@
-CodeMirror.ternLint = function(cm, updateLinting, options) {
+CodeMirror.ternLint = function(text, updateLinting, options, editor) {
 
+  var cm = (editor) ? editor : text;
+  
   function addAnnotation(error, found) {
     var startLine = error.startLine;
     var startChar = error.startChar;
