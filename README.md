@@ -3,7 +3,7 @@ tern-lint
 
 [![Build Status](https://secure.travis-ci.org/angelozerr/tern-lint.png)](http://travis-ci.org/angelozerr/tern-lint)
 
-**tern-lint** is a tern plugin which is able to validate JavaScripts files to collect **semantic errors**). It's the main difference with other famous linters like [JSHint](http://jshint.com/), [ESLint](http://eslint.org/), [JSCS ](http://jscs.info/) which validate JavaScript files to collect **syntax errors**.
+**tern-lint** is a tern plugin which is able to validate JavaScripts files to collect **semantic errors**. It's the main difference with other famous linters like [JSHint](http://jshint.com/), [ESLint](http://eslint.org/), [JSCS ](http://jscs.info/) which validate JavaScript files to collect **syntax errors**.
 
 What do you mean with *semantic errors"? Invalid argument is a sample of semantic error :
 
