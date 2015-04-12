@@ -28,7 +28,7 @@ Here a screenshot with tern lint and CodeMirror :
 
 ## with Eclipse :
 
-If you are Eclipse user, you can use the tern lint.js too. See [Tern IDE & Validation](https://github.com/angelozerr/tern.java/wiki/Tern-&-Validation)
+If you are Eclipse user, you can use the tern lint.js too. See [Tern IDE & Validation](https://github.com/angelozerr/tern.java/wiki/Tern-Linter-Lint)
 
 ![Eclipse & TernLint](https://github.com/angelozerr/tern.lint/wiki/images/EclipseIDE_TernLintOverview.png)
 
