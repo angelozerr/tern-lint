@@ -15,15 +15,6 @@
     "UnusedVariable" : {"severity" : "warning"},
     "UnknownModule" : {"severity" : "error"}
   };
-  
-  function outputPos(query, file, pos) {
-    if (query.lineCharPositions) {
-      var out = file.asLineChar(pos);
-      return out;
-    } else {
-      return pos;
-    }
-  }
 
   function makeVisitors(server, query, file, messages) {
 	
@@ -36,8 +27,8 @@
       var pos = getPosition(node);
       var error = {
           message: msg,
-          from: outputPos(query, file, pos.start),
-          to: outputPos(query, file, pos.end),
+          from: tern.outputPos(query, file, pos.start),
+          to: tern.outputPos(query, file, pos.end),
           severity: severity
       };
       if (!query.groupByFiles) error.file = file.name;
