@@ -31,6 +31,9 @@
           to: tern.outputPos(query, file, pos.end),
           severity: severity
       };
+      if (query.lineNumber) {
+        error.lineNumber = query.lineCharPositions ? error.from.line : tern.outputPos({lineCharPositions: true}, file, pos.start).line; 
+      }
       if (!query.groupByFiles) error.file = file.name;
       return error;
     }
