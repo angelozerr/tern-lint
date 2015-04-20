@@ -269,6 +269,8 @@
       MemberExpression: function(node, state, c) {
         var rule = getRule("UnknownProperty");
         if (!rule) return;
+        var prop = node.property && node.property.name;
+        if (!prop || prop == "✖") return;
         var type = infer.expressionType({node: node, state: state});
         var parentType = infer.expressionType({node: node.object, state: state});
 
@@ -297,7 +299,7 @@
             // this may contain properties that are not really defined.
             parentType.types.forEach(function(potentialType) {
               // Obj#hasProp checks the prototype as well
-              if(typeof potentialType.hasProp == 'function' && potentialType.hasProp(node.property.name, true)) {
+              if(typeof potentialType.hasProp == 'function' && potentialType.hasProp(prop, true)) {
                 propertyDefined = true;
               }
             });

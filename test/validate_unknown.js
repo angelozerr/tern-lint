@@ -179,7 +179,7 @@ exports['test assignment of unknown value'] = function() {
 			"from": 35,
 			"to": 45,
 			"severity": "warning",
-                        "file": "test1.js"} ]
+            "file": "test1.js"} ]
 	}, null, IGNORE_UNUSED_VAR);
 
 	util.assertLint("var a = {t: 5}; function test(p) { a.t = p; }", {
@@ -201,6 +201,23 @@ exports['test undefined (issue 35)'] = function() {
   util.assertLint("undefined", {
           messages : []
   }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+}
+
+exports['test Unknown property "x" (issue 17)'] = function() {
+  
+  util.assertLint("var a = {}; a.", {
+          messages : []
+  }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+  
+  util.assertLint("var a = {}; a.xxx", {
+    messages : [ {
+      "message": "Unknown property 'xxx'",
+      "from": 14,
+      "to": 17,
+      "severity": "warning",
+      "file": "test1.js"} ]
+  }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+
 }
 
 if (module == require.main) require('test').run(exports)
