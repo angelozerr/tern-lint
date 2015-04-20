@@ -13,7 +13,8 @@
     "NotAFunction" : {"severity" : "error"},
     "InvalidArgument" : {"severity" : "error"},
     "UnusedVariable" : {"severity" : "warning"},
-    "UnknownModule" : {"severity" : "error"}
+    "UnknownModule" : {"severity" : "error"},
+    "MixedReturnTypes": {"severity" : "warning"}
   };
 
   function makeVisitors(server, query, file, messages) {
@@ -265,6 +266,23 @@
     var visitors = {
       VariableDeclaration: validateDeclaration,
       FunctionDeclaration: validateDeclaration,
+      ReturnStatement: function(node, state, c) {
+        if (!node.argument) return;
+        var rule = getRule("MixedReturnTypes");
+        if (!rule) return;
+        if (state.fnType && state.fnType.retval && state.fnType.retval.types && state.fnType.retval.types.length > 1) {
+          var type = infer.expressionType({node: node.argument, state: state}), types = state.fnType.retval.types;
+          var expectedTypes = "";
+          for (var i = 0; i < types.length; i++) {
+            var t = types[i];
+            if (type != t) {
+              if (expectedTypes != "") expectedTypes+="|";
+              expectedTypes+= getTypeName(t)
+            }
+          }
+          addMessage(node, "Cannot convert from " + getTypeName(type) + " to " + expectedTypes, rule.severity);
+        }
+      },
       // Detects expressions of the form `object.property`
       MemberExpression: function(node, state, c) {
         var rule = getRule("UnknownProperty");
