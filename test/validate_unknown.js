@@ -220,4 +220,12 @@ exports['test Unknown property "x" (issue 17)'] = function() {
 
 }
 
+exports['test issue13'] = function() {
+  // See issue
+  // https://github.com/angelozerr/tern-lint/issues/13
+  util.assertLint("var b = {test: ''};\nvar a = '';\na = {test: function() {}};\na.test();", {
+      messages : []
+  }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+}
+
 if (module == require.main) require('test').run(exports)
