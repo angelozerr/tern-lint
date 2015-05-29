@@ -1,7 +1,7 @@
 {
   "name": "tern-lint",
   "license": "MIT",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "lint.js",
   "bin": "./bin/lint",
   "author": "Angelo ZERR <angelo.zerr@gmail.com>",
@@ -11,7 +11,6 @@
     "url": "git://github.com/angelozerr/tern-lint.git"
   },
   "scripts": {
-    "publish": "node ./scripts/git-tag.js",
     "test": "node ./test/all.js"
   },
   "dependencies": {
