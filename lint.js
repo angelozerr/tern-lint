@@ -1,10 +1,10 @@
-(function(mod) {
+(function(root, mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
-    return mod(require("tern/lib/infer"), require("tern/lib/tern"), require("acorn/dist/walk"));
+    return mod(exports, require("tern/lib/infer"), require("tern/lib/tern"), require("acorn/dist/walk"));
   if (typeof define == "function" && define.amd) // AMD
-    return define(["tern/lib/infer", "tern/lib/tern", "acorn/dist/walk"], mod);
-  mod(tern, tern, acorn.walk);
-})(function(infer, tern, walk) {
+    return define(["exports", "tern/lib/infer", "tern/lib/tern", "acorn/dist/walk"], mod);
+  mod(root.tern || (root.tern = {}), tern, tern, acorn.walk);
+})(this, function(exports, infer, tern, walk) {
   "use strict";
   
   var defaultRules = {
