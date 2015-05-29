@@ -610,7 +610,7 @@
     function gather(prop, obj, depth, addInfo) {
       // 'hasOwnProperty' and such are usually just noise, leave them
       // out when no prefix is provided.
-      if (query.omitObjectPrototype !== false && obj == srv.cx.protos.Object && !word) return;
+      if ((objLit || query.omitObjectPrototype !== false) && obj == srv.cx.protos.Object && !word) return;
       if (query.filter !== false && word &&
           (query.caseInsensitive ? prop.toLowerCase() : prop).indexOf(word) !== 0) return;
       if (ignoreObj && ignoreObj.props[prop]) return;
@@ -688,7 +688,7 @@
     if (prop != null) {
       srv.cx.completingProperty = prop;
 
-      if (objType) infer.forAllPropertiesOf(objType, gather);
+      if (objType) infer.forAllPropertiesOf(objType, gather, query);
 
       if (!completions.length && query.guess !== false && objType && objType.guessProperties)
         objType.guessProperties(function(p, o, d) {if (p != prop && p != "✖") gather(p, o, d);});
@@ -990,5 +990,5 @@
     return {files: srv.files.map(function(f){return f.name;})};
   }
 
-  exports.version = "0.10.1";
+  exports.version = "0.11.1";
 });

@@ -367,6 +367,7 @@
   }
 
   function propagateWithWeight(type, target) {
+    target.docTypes = type;
     var weight = infer.cx().parent._docComment.weight;
     type.type.propagate(target, weight || (type.madeUp ? WG_MADEUP : undefined));
   }

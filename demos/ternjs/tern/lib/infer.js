@@ -140,10 +140,18 @@
     },
 
     computedPropType: function() {
-      if (!this.propertyOf || !this.propertyOf.hasProp("<i>")) return null;
-      var computedProp = this.propertyOf.getProp("<i>");
-      if (computedProp == this) return null;
-      return computedProp.getType();
+      if (!this.propertyOf) return null;
+      if (this.propertyOf.hasProp("<i>")) {
+        var computedProp = this.propertyOf.getProp("<i>");
+        if (computedProp == this) return null;
+        return computedProp.getType();
+      } else if (this.propertyOf.maybeProps && this.propertyOf.maybeProps["<i>"] == this) {
+        for (var prop in this.propertyOf.props) {
+          var val = this.propertyOf.props[prop];
+          if (!val.isEmpty()) return val;
+        }
+        return null;
+      }
     },
 
     makeupType: function() {
@@ -183,9 +191,16 @@
     typeHint: function() { return this.types.length ? this.getType() : null; },
     propagatesTo: function() { return this; },
 
-    gatherProperties: function(f, depth) {
-      for (var i = 0; i < this.types.length; ++i)
-        this.types[i].gatherProperties(f, depth);
+    gatherProperties: function(f, depth, query) {
+      var types = this.types;
+      if (query && query.preferDocType && this.types.length > 0) {
+        types = [];
+        for (var i = 0; i < this.types.length; ++i)
+          if (this.types[i].origin = "doc") types.push(this.types[i]);
+        if (types.length == 0) types = this.types;        
+      } 
+      for (var i = 0; i < types.length; ++i)
+        types[i].gatherProperties(f, depth);
     },
 
     guessProperties: function(f) {
@@ -498,7 +513,8 @@
   Obj.prototype = extend(Type.prototype, {
     constructor: Obj,
     toString: function(maxDepth) {
-      if (!maxDepth && this.name) return this.name;
+      if (maxDepth == null) maxDepth = 0;
+      if (maxDepth <= 0 && this.name) return this.name;
       var props = [], etc = false;
       for (var prop in this.props) if (prop != "<i>") {
         if (props.length > 5) { etc = true; break; }
@@ -626,17 +642,17 @@
   Fn.prototype = extend(Obj.prototype, {
     constructor: Fn,
     toString: function(maxDepth) {
-      if (maxDepth) maxDepth--;
+      if (maxDepth == null) maxDepth = 0;
       var str = "fn(";
       for (var i = 0; i < this.args.length; ++i) {
         if (i) str += ", ";
         var name = this.argNames[i];
         if (name && name != "?") str += name + ": ";
-        str += toString(this.args[i], maxDepth, this);
+        str += maxDepth > -3 ? toString(this.args[i], maxDepth - 1, this) : "?";
       }
       str += ")";
       if (!this.retval.isEmpty())
-        str += " -> " + toString(this.retval, maxDepth, this);
+        str += " -> " + (maxDepth > -3 ? toString(this.retval, maxDepth - 1, this) : "?");
       return str;
     },
     getProp: function(prop) {
@@ -674,7 +690,8 @@
   Arr.prototype = extend(Obj.prototype, {
     constructor: Arr,
     toString: function(maxDepth) {
-      return "[" + toString(this.getProp("<i>"), maxDepth, this) + "]";
+      if (maxDepth == null) maxDepth = 0;
+      return "[" + (maxDepth > -3 ? toString(this.getProp("<i>"), maxDepth - 1, this) : "?") + "]";
     }
   });
 
@@ -1566,8 +1583,8 @@
   exports.resetGuessing = function(val) { guessing = val; };
   exports.didGuess = function() { return guessing; };
 
-  exports.forAllPropertiesOf = function(type, f) {
-    type.gatherProperties(f, 0);
+  exports.forAllPropertiesOf = function(type, f, query) {
+    type.gatherProperties(f, 0, query);
   };
 
   var refFindWalker = walk.make({}, searchVisitor);

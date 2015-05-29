@@ -30,12 +30,12 @@ var def = {
       "!doc": "Creates a new object with the specified prototype object and properties."
     },
     "defineProperty": {
-      "!type": "fn(obj: ?, prop: string, desc: ?)",
+      "!type": "fn(obj: ?, prop: string, desc: ?) -> !custom:Object_defineProperty",
       "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/defineProperty",
       "!doc": "Defines a new property directly on an object, or modifies an existing property on an object, and returns the object. If you want to see how to use the Object.defineProperty method with a binary-flags-like syntax, see this article."
     },
     "defineProperties": {
-      "!type": "fn(obj: ?, props: ?)",
+      "!type": "fn(obj: ?, props: ?) -> !custom:Object_defineProperties",
       "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/defineProperty",
       "!doc": "Defines a new property directly on an object, or modifies an existing property on an object, and returns the object. If you want to see how to use the Object.defineProperty method with a binary-flags-like syntax, see this article."
     },
@@ -74,6 +74,16 @@ var def = {
       "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/isFrozen",
       "!doc": "Determine if an object is frozen."
     },
+    "preventExtensions": {
+      "!type": "fn(obj: ?)",
+      "!url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/preventExtensions",
+      "!doc": "Prevents new properties from ever being added to an object."
+    },
+    "isExtensible": {
+      "!type": "fn(obj: ?) -> bool",
+      "!url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/isExtensible",
+      "!doc": "The Object.isExtensible() method determines if an object is extensible (whether it can have new properties added to it)."
+    },
     "prototype": {
       "!stdProto": "Object",
       "toString": {
@@ -100,6 +110,11 @@ var def = {
         "!type": "fn(prop: string) -> bool",
         "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/propertyIsEnumerable",
         "!doc": "Returns a Boolean indicating whether the specified property is enumerable."
+      },
+      "isPrototypeOf": {
+        "!type": "fn(obj: ?) -> bool",
+        "!url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/isPrototypeOf",
+        "!doc": "Tests for an object in another object's prototype chain."
       }
     },
     "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object",
@@ -129,7 +144,8 @@ var def = {
         "!type": "fn(this: ?, args?: ?) -> !custom:Function_bind",
         "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function/bind",
         "!doc": "Creates a new function that, when called, has its this keyword set to the provided value, with a given sequence of arguments preceding any provided when the new function was called."
-      }
+      },
+      "prototype": "?"
     },
     "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function",
     "!doc": "Every function in JavaScript is actually a Function object."
@@ -288,8 +304,8 @@ var def = {
       "!stdProto": "String",
       "length": {
         "!type": "number",
-        "!url": "https://developer.mozilla.org/en/docs/JavaScript/Reference/Global_Objects/String",
-        "!doc": "The String global object is a constructor for strings, or a sequence of characters."
+        "!url": "https://developer.mozilla.org/en/docs/JavaScript/Reference/Global_Objects/String/length",
+        "!doc": "Represents the length of a string."
       },
       "<i>": "string",
       "charAt": {
@@ -332,16 +348,6 @@ var def = {
         "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String/Trim",
         "!doc": "Removes whitespace from both ends of the string."
       },
-      "trimLeft": {
-        "!type": "fn() -> string",
-        "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String/TrimLeft",
-        "!doc": "Removes whitespace from the left end of the string."
-      },
-      "trimRight": {
-        "!type": "fn() -> string",
-        "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String/TrimRight",
-        "!doc": "Removes whitespace from the right end of the string."
-      },
       "toUpperCase": {
         "!type": "fn() -> string",
         "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String/toUpperCase",
@@ -383,7 +389,7 @@ var def = {
         "!doc": "Used to retrieve the matches when matching a string against a regular expression."
       },
       "replace": {
-        "!type": "fn(pattern: +RegExp, replacement: string) -> string",
+        "!type": "fn(pattern: string|+RegExp, replacement: string) -> string",
         "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String/replace",
         "!doc": "Returns a new string with some or all matches of a pattern replaced by a replacement.  The pattern can be a string or a RegExp, and the replacement can be a string or a function to be called for each match."
       },
@@ -434,6 +440,11 @@ var def = {
         "!type": "fn(digits: number) -> string",
         "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Number/toExponential",
         "!doc": "Returns a string representing the Number object in exponential notation"
+      },
+      "toPrecision": {
+        "!type": "fn(digits: number) -> string",
+        "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Number/toPrecision",
+        "!doc": "The toPrecision() method returns a string representing the number to the specified precision."
       }
     },
     "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Number",
@@ -455,11 +466,6 @@ var def = {
         "!type": "fn(input: string) -> [string]",
         "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RegExp/exec",
         "!doc": "Executes a search for a match in a specified string. Returns a result array, or null."
-      },
-      "compile": {
-        "!type": "fn(source: string, flags?: string)",
-        "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RegExp",
-        "!doc": "Creates a regular expression object for matching text with a pattern."
       },
       "test": {
         "!type": "fn(input: string) -> bool",
@@ -759,6 +765,12 @@ var def = {
     "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RangeError",
     "!doc": "Represents an error when a number is not within the correct range allowed."
   },
+  "TypeError": {
+    "!type": "fn(message: string)",
+    "prototype": "Error.prototype",
+    "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/TypeError",
+    "!doc": "Represents an error an error when a value is not of the expected type."
+  },
   "parseInt": {
     "!type": "fn(string: string, radix?: number) -> number",
     "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/parseInt",
@@ -773,6 +785,11 @@ var def = {
     "!type": "fn(value: number) -> bool",
     "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/isNaN",
     "!doc": "Determines whether a value is NaN or not. Be careful, this function is broken. You may be interested in ECMAScript 6 Number.isNaN."
+  },
+  "isFinite": {
+    "!type": "fn(value: number) -> bool",
+    "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/isFinite",
+    "!doc": "Determines whether the passed value is a finite number."
   },
   "eval": {
     "!type": "fn(code: string) -> ?",
@@ -876,7 +893,7 @@ var def = {
       "!doc": "Returns the arctangent (in radians) of a number."
     },
     "atan2": {
-      "!type": "fn(number, number) -> number",
+      "!type": "fn(y: number, x: number) -> number",
       "!url": "https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/atan2",
       "!doc": "Returns the arctangent of the quotient of its arguments."
     },
