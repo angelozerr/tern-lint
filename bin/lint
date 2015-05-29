@@ -1,0 +1,161 @@
+#!/usr/bin/env node
+
+var tern = require("tern"), lint = require("../lint");
+var fs = require("fs"), path = require("path");
+var glob = require("glob"), minimatch = require("minimatch");
+
+var projectFileName = ".tern-project";
+var stripCRs = process.argv.indexOf("--strip-crs") > -1;
+var disableLoadingLocal = process.argv.indexOf("--disable-loading-local") > -1;
+var verbose = process.argv.indexOf("--verbose") > -1;
+var format = process.argv.indexOf("--format") > -1;
+
+function findProjectDir() {
+  var dir = process.cwd();
+  for (;;) {
+    try {
+      if (fs.statSync(path.resolve(dir, projectFileName)).isFile()) return dir;
+    } catch(e) {}
+    var shorter = path.dirname(dir);
+    if (shorter == dir) return null;
+    dir = shorter;
+  }
+}
+
+var defaultConfig = {
+  libs: [],
+  loadEagerly: false,
+  plugins: {},
+  ecmaScript: true,
+  dependencyBudget: tern.defaultOptions.dependencyBudget
+};
+var homeDir = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
+if (homeDir && fs.existsSync(path.resolve(homeDir, ".tern-config")))
+  defaultConfig = readProjectFile(path.resolve(homeDir, ".tern-config"));
+
+function readJSON(fileName) {
+  var file = fs.readFileSync(fileName, "utf8");
+  try {
+    return JSON.parse(file);
+  } catch (e) {
+    console.error("Bad JSON in " + fileName + ": " + e.message);
+    process.exit(1);
+  }
+}
+
+function readProjectFile(fileName) {
+  var data = readJSON(fileName);
+  for (var option in defaultConfig) if (!data.hasOwnProperty(option))
+    data[option] = defaultConfig[option];
+  return data;
+}
+
+function findFile(file, projectDir, fallbackDir) {
+  var local = path.resolve(projectDir, file);
+  if (!disableLoadingLocal && fs.existsSync(local)) return local;
+  var shared = path.resolve(fallbackDir, file);
+  if (fs.existsSync(shared)) return shared;
+}
+
+var distDir = path.resolve(__dirname, "..");
+
+function findDefs(projectDir, config) {
+  var defs = [], src = config.libs;
+  if (src.indexOf("ecma5") == -1 && config.ecmaScript) src = ["ecma5"].concat(src);
+  for (var i = 0; i < src.length; ++i) {
+    var file = src[i];
+    if (!/\.json$/.test(file)) file = file + ".json";
+    var found = require.resolve("tern/defs/" + file); //findFile(file, projectDir, path.resolve(distDir, "defs"));
+    if (!found) {
+      try {
+        found = require.resolve("tern-" + src[i]);
+      } catch (e) {
+        process.stderr.write("Failed to find library " + src[i] + ".\n");
+        continue;
+      }
+    }
+    if (found) defs.push(readJSON(found));
+  }
+  return defs;
+}
+
+var defaultPlugins = ["doc_comment"];
+
+function loadPlugins(projectDir, plugins) {
+  var options = {};
+  if (!plugins["lint"]) plugins["lint"] = {};
+  for (var plugin in plugins) {
+    var val = plugins[plugin];
+    if (!val) continue;
+    var mod = null;
+    if (plugin == "lint") {
+      mod = lint;
+    } else {  
+      var found = require.resolve("tern/plugin/" + file); // findFile(plugin + ".js", projectDir, path.resolve(distDir, "tern/plugin"));
+      if (!found) {
+        try {
+          found = require.resolve("tern-" + plugin);
+        } catch (e) {
+          process.stderr.write("Failed to find plugin " + plugin + ".\n");
+          continue;
+        }
+      }
+      mod = require(found);
+    }
+    if (mod.hasOwnProperty("initialize")) mod.initialize(distDir);
+    options[path.basename(plugin)] = val;
+  }
+
+  defaultPlugins.forEach(function(name) {
+    if (!plugins.hasOwnProperty(name)) {
+      options[name] = true;
+      require("tern/plugin/" + name);
+    }
+  });
+  return options;
+}
+
+var projectDir = findProjectDir();
+if (projectDir) {
+  var config = readProjectFile(path.resolve(projectDir, projectFileName));
+} else {
+  projectDir = process.cwd();
+  var config = defaultConfig;
+}
+
+var server = startServer(projectDir, config);
+
+function startServer(dir, config) {
+  var defs = findDefs(dir, config);
+  var plugins = loadPlugins(dir, config.plugins);
+  var server = new tern.Server({
+    getFile: function(name, c) {
+      if (config.dontLoad && config.dontLoad.some(function(pat) {return minimatch(name, pat)}))
+        c(null, "");
+      else
+        fs.readFile(path.resolve(dir, name), "utf8", c);
+    },
+    async: true,
+    defs: defs,
+    plugins: plugins,
+    debug: verbose,
+    projectDir: dir,
+    dependencyBudget: config.dependencyBudget,
+    stripCRs: stripCRs
+  });
+
+  if (!config.loadEagerly) config.loadEagerly = ["**/**.js"];
+  config.loadEagerly.forEach(function(pat) {
+    glob.sync(pat, { cwd: dir }).forEach(function(file) {
+      server.addFile(file);
+    });
+  });
+  
+  return server;
+}
+
+server.flush(function(err) {
+  if (err) throw err;
+  var query = {};
+  console.log(format ? JSON.stringify(lint.validateFiles(server, query), null, ' ') : JSON.stringify(lint.validateFiles(server, query)));
+});

@@ -376,36 +376,48 @@
   //   infer.fullVisitor
   var base = scopeVisitor;
   
+  // Validate one file
+  
+  var validateFile = exports.validateFile = function(server, query, file) {
+    try {
+      var messages = [], ast = file.ast, state = file.scope;
+      var visitors = makeVisitors(server, query, file, messages);
+      walk.simple(ast, visitors, base, state);
+      return {messages: messages};
+    } catch(err) {
+      console.error(err.stack);
+      return {messages: []};
+    }
+  }
+  
   tern.defineQueryType("lint", {
     takesFile: true,
     run: function(server, query, file) {
-      try {
-        var messages = [], ast = file.ast, state = file.scope;
-        var visitors = makeVisitors(server, query, file, messages);
-        walk.simple(ast, visitors, base, state);
-        return {messages: messages};
-      } catch(err) {
-        console.error(err.stack);
-        return {messages: []};
-      }
+      return validateFile(server, query, file);  
     }
   });
 
+  // Validate the whole files of the server
+  
+  var validateFiles = exports.validateFiles = function(server, query) {
+    try {
+      var messages = [], files = server.files, groupByFiles = query.groupByFiles == true;
+      for (var i = 0; i < files.length; ++i) {
+        var messagesFile = groupByFiles ? [] : messages, file = files[i], ast = file.ast, state = file.scope;
+        var visitors = makeVisitors(server, query, file, messagesFile);
+        walk.simple(ast, visitors, base, state);
+        if (groupByFiles) messages.push({file:file.name, messages: messagesFile});
+      }        
+      return {messages: messages};
+    } catch(err) {
+      console.error(err.stack);
+      return {messages: []};
+    }
+  }
+  
   tern.defineQueryType("lint-full", {
     run: function(server, query) {
-      try {
-        var messages = [], files = server.files, groupByFiles = query.groupByFiles == true;
-        for (var i = 0; i < files.length; ++i) {
-          var messagesFile = groupByFiles ? [] : messages, file = files[i], ast = file.ast, state = file.scope;
-          var visitors = makeVisitors(server, query, file, messagesFile);
-          walk.simple(ast, visitors, base, state);
-          if (groupByFiles) messages.push({file:file.name, messages: messagesFile});
-        }        
-        return {messages: messages};
-      } catch(err) {
-        console.error(err.stack);
-        return {messages: []};
-      }
+      return validateFiles(server, query);
     }
   });
   
@@ -424,7 +436,8 @@
       rules: getRules(options)	
     };
     return {
-    	passes: {}
+    	passes: {},
+    	loadFirst: true
     };
   });
   
