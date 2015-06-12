@@ -688,7 +688,7 @@
     if (prop != null) {
       srv.cx.completingProperty = prop;
 
-      if (objType) infer.forAllPropertiesOf(objType, gather, query);
+      if (objType) infer.forAllPropertiesOf(objType, gather);
 
       if (!completions.length && query.guess !== false && objType && objType.guessProperties)
         objType.guessProperties(function(p, o, d) {if (p != prop && p != "✖") gather(p, o, d);});

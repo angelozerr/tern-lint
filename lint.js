@@ -14,7 +14,8 @@
     "InvalidArgument" : {"severity" : "error"},
     "UnusedVariable" : {"severity" : "warning"},
     "UnknownModule" : {"severity" : "error"},
-    "MixedReturnTypes": {"severity" : "warning"}
+    "MixedReturnTypes": {"severity" : "warning"},
+    "ObjectLiteral": {"severity" : "error"}
   };
 
   function makeVisitors(server, query, file, messages) {
@@ -115,24 +116,28 @@
       return false;
     }
     
-    function checkPropsInObject(i, node, expectedArg, actualObj, invalidArgument) {
-      var
-        object = expectedArg.getType().proto.props,
-        expectedArgType = expectedArg.getType(),
-        props = actualObj.props,
-        prop_count = 0;
-      for (var prop in props) {
-        if (! ( prop in object ) ) {
-          addMessage(node.properties[prop_count].key, "Invalid argument at " + (i+1) + ": " + prop + " is not a property in " + getTypeName(expectedArgType), invalidArgument.severity);
-        } else {
-          // test that each object literal prop is the correct type
-          var actualType = actualObj.props[prop].getType();
-          if (getTypeName(expectedArgType.proto.props[prop].getType()) !== getTypeName(actualType)) {
-            addMessage(node.properties[prop_count].value, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualType) + " to " + getTypeName(object[prop].getType()), invalidArgument.severity);
+    function checkPropsInObject(node, expectedArg, actualObj, invalidArgument) {
+      var properties = node.properties, object = expectedArg.getType().proto.props, expectedArgType = expectedArg.getType();
+      for (var i = 0; i < properties.length; i++) {
+        var property = properties[i], key = property.key, prop = key && key.name, value = property.value;
+        if (prop) {
+          if (! ( prop in object ) ) {
+            // key doesn't exists
+            addMessage(key, "Invalid property at " + (i+1) + ": " + prop + " is not a property in " + getTypeName(expectedArgType), invalidArgument.severity);
+          } else {
+            // test that each object literal prop is the correct type
+            var actualType = actualObj.props[prop].getType();
+            if (getTypeName(expectedArgType.proto.props[prop].getType()) !== getTypeName(actualType)) {
+              addMessage(value, "Invalid property at " + (i+1) + ": cannot convert from " + getTypeName(actualType) + " to " + getTypeName(object[prop].getType()), invalidArgument.severity);
+            }
           }
         }
-        prop_count++;
       }
+    }
+    
+    function isObjectLiteral(type) {
+      var objType = type.getObjType();
+      return objType && objType.proto && objType.proto.name == "Object.prototype"; 
     }
 
     function getFunctionLint(fnType) {
@@ -181,31 +186,13 @@
               } else { 
                 //console.error(file.name)
                 var actualArg = infer.expressionType({node: actualNode, state: state});
-                if (!compareType(expectedArg.getType(), actualArg.getType())) {
-                  // Type check an object literal in a parameter, see tests labeled #JSObjectLiteralInParameter
-                  // often an object literal is used to express bunch of optional arguments to a function
-                  // this has a low overhead because Object Literals (typed as a function argument) rarely have more than 20 properties
-                  var notCheckableOLTypes = ["Object.prototype", // because their would be no properties to check
-                                            ,"Boolean.prototype"
-                                            ,"Function.prototype"
-                                            ,"String.prototype"
-                                            ]
-                  var canBeOL = notCheckableOLTypes.indexOf(getTypeName(expectedArg.getType())) === -1;
-                  if ( actualNode.type === "ObjectExpression" && canBeOL) {
-                    checkPropsInObject(i, actualNode, expectedArg, actualArg, invalidArgument);
-                  // handle the case where the identifier points to an object literal
-                  } else if ((actualNode.type === "Identifier") && canBeOL) {
-                    // logic from findDef
-                    // first we have to find the object literal
-                    var query = {type: "definition", start: actualNode.start, end: actualNode.end};
-                    var expr = tern.findQueryExpr(file, query);
-                    var type = infer.expressionType(expr);
-                    var objExpr = type.getType();
-                    if (objExpr.originNode && objExpr.originNode.type === "ObjectExpression")
-                      checkPropsInObject(i, objExpr.originNode, expectedArg, objExpr, invalidArgument);
-                  } else
+                // if actual type is an Object literal and expected type is an object, we ignore 
+                // the comparison type since object literal properties validation is done inside "ObjectExpression".
+                if (!(expectedArg.getObjType() && isObjectLiteral(actualArg))) {
+                  if (!compareType(expectedArg.getType(), actualArg.getType())) {
                     addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
-                }
+                  }
+                }                
               }
             }      
           }
@@ -351,7 +338,26 @@
       // `node.callee` is the expression (Identifier or MemberExpression)
       // the is called as a function.
       NewExpression: validateCallExpression,
-      CallExpression: validateCallExpression
+      CallExpression: validateCallExpression,
+      ObjectExpression: function(node, state, c) {
+        // validate properties of the object literal
+        var rule = getRule("ObjectLiteral");
+        if (!rule) return;
+        var actualType = node.objType;
+        var ctxType = infer.typeFromContext(file.ast, {node: node, state: state}), expectedType = null;
+        if (ctxType instanceof infer.Obj) {
+          expectedType = ctxType.getObjType(); 
+        } else if (ctxType && ctxType.makeupType) {
+          var objType = ctxType.makeupType();
+          if (objType && objType.getObjType()) {
+            expectedType = objType.getObjType();
+          }
+        }
+        if (expectedType && expectedType != actualType) {
+          // expected type is known. Ex: config object of RequireJS
+          checkPropsInObject(node, expectedType, actualType, rule);
+        }
+      }
     };
 
     return visitors;

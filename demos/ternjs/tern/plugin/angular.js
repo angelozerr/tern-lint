@@ -8,7 +8,8 @@
 })(function(infer, tern, comment, walk) {
   "use strict";
 
-  var SetDoc = infer.constraint("doc", {
+  var SetDoc = infer.constraint({
+    construct: function(doc) { this.doc = doc; },
     addType: function(type) {
       if (!type.doc) type.doc = this.doc;
     }
@@ -170,7 +171,10 @@
     return mod;
   });
 
-  var IsBound = infer.constraint("self, args, target", {
+  var IsBound = infer.constraint({
+    construct: function(self, args, target) {
+      this.self = self; this.args = args; this.target = target;
+    },
     addType: function(tp) {
       if (!(tp instanceof infer.Fn)) return;
       this.target.addType(new infer.Fn(tp.name, tp.self, tp.args.slice(this.args.length),
@@ -641,6 +645,7 @@
           "!doc": "Converts Angular expression into a function."
         },
         $q: {
+          "!type": "fn(executor: fn(resolve: fn(value: ?) -> +Promise, reject: fn(value: ?) -> +Promise)) -> +Promise",
           "!url": "http://docs.angularjs.org/api/ng.$q",
           "!doc": "A promise/deferred implementation.",
           all: {
@@ -654,7 +659,7 @@
             "!doc": "Creates a Deferred object which represents a task which will finish in the future."
           },
           reject: {
-            "!type": "fn(reasion: ?) -> +Promise",
+            "!type": "fn(reason: ?) -> +Promise",
             "!url": "http://docs.angularjs.org/api/ng.$q#reject",
             "!doc": "Creates a promise that is resolved as rejected with the specified reason."
           },
