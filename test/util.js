@@ -20,7 +20,7 @@ var allDefs = {
   chrome_apps : chrome_apps
 };
 
-var createServer = exports.createServer = function(defNames, options) {
+var createServer = exports.createServer = function(defNames, options, useJSDoc) {
   var defs = [];
   if (defNames) {
     for (var i = 0; i < defNames.length; i++) {
@@ -29,10 +29,12 @@ var createServer = exports.createServer = function(defNames, options) {
     }
   }
   var plugins = {};
-  if (options)
-    plugins['lint'] = options;
-  else
-    plugins['lint'] = {};
+  plugins["lint"] = options ? options : {};
+  if (useJSDoc) {
+    // JSDoc must be used, add the doc_comment with "strong" option
+    require("tern/plugin/doc_comment");
+    plugins['doc_comment'] = {"strong": true};
+  }
   var server = new tern.Server({
     plugins : plugins,
     defs : defs
@@ -48,8 +50,8 @@ var assertLintReponse = exports.assertLintReponse = function(err, resp, expected
   assert.equal(JSON.stringify(resp), JSON.stringify(expected));
 }
 
-exports.assertLint = function(text, expected, defNames, options) {
-  var server = createServer(defNames, options);
+exports.assertLint = function(text, expected, defNames, options, useJSDoc) {
+  var server = createServer(defNames, options, useJSDoc);
   server.addFile("test1.js", text);
   server.request({
     query : {
