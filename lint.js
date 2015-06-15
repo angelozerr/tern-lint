@@ -91,8 +91,18 @@
     }
     
     function getTypeName(type) {
-      if (!type || !type.proto) return "Unknown type";
-      return type.proto.name;
+      if (!type) return "Unknown type";
+      if (type.types) {
+        // multiple types
+        var types = type.types, s = "";
+        for (var i = 0; i < types.length; i++) {
+          if (i > 0) s +="|";
+          var t = getTypeName(types[i]);
+          if (t != "Unknown type") s+= t;
+        }
+        return s == "" ? "Unknown type" : s; 
+      }
+      return (type.proto) ? type.proto.name : "Unknown type";       
     }
     
     function hasProto(expectedType, name) {
@@ -138,18 +148,18 @@
     }
     
     function checkPropsInObject(node, expectedArg, actualObj, invalidArgument) {
-      var properties = node.properties, object = expectedArg.getType().proto.props, expectedArgType = expectedArg.getType();
+      var properties = node.properties, expectedObj = expectedArg.getType().proto;
       for (var i = 0; i < properties.length; i++) {
         var property = properties[i], key = property.key, prop = key && key.name, value = property.value;
         if (prop) {
-          if (! ( prop in object ) ) {
+          if (!expectedObj.hasProp(prop)) {
             // key doesn't exists
-            addMessage(key, "Invalid property at " + (i+1) + ": " + prop + " is not a property in " + getTypeName(expectedArgType), invalidArgument.severity);
+            addMessage(key, "Invalid property at " + (i+1) + ": " + prop + " is not a property in " + getTypeName(expectedArg), invalidArgument.severity);
           } else {
             // test that each object literal prop is the correct type
-            var actualType = actualObj.props[prop].getType();
-            if (getTypeName(expectedArgType.proto.props[prop].getType()) !== getTypeName(actualType)) {
-              addMessage(value, "Invalid property at " + (i+1) + ": cannot convert from " + getTypeName(actualType) + " to " + getTypeName(object[prop].getType()), invalidArgument.severity);
+            var expectedType = expectedObj.props[prop], actualType = actualObj.props[prop];
+            if (!compareType(expectedType, actualType)) {
+              addMessage(value, "Invalid property at " + (i+1) + ": cannot convert from " + getTypeName(actualType) + " to " + getTypeName(expectedType), invalidArgument.severity);
             }
           }
         }
@@ -168,6 +178,15 @@
         return fnType.lint;
       };
     }
+    
+    function isFunctionType(type) {
+      if (type.types) {
+        for (var i = 0; i < type.types.length; i++) {
+          if (isFunctionType(type.types[i])) return true;
+        }
+      }
+      return type.proto && type.proto.name == "Function.prototype";
+    }
 
     function validateCallExpression(node, state, c) {
       var notAFunctionRule = getRule("NotAFunction"), invalidArgument = getRule("InvalidArgument");
@@ -180,7 +199,7 @@
         // If one of them is a function, type.getFunctionType() will return it.
         var fnType = type.getFunctionType();
         if(fnType == null) {
-          if (notAFunctionRule) addMessage(node, "'" + getNodeName(node) + "' is not a function", notAFunctionRule.severity);                           
+          if (notAFunctionRule && !isFunctionType(type)) addMessage(node, "'" + getNodeName(node) + "' is not a function", notAFunctionRule.severity);                           
         } else if (getFunctionLint(fnType)) {
            // custom lint for function
           getFunctionLint(fnType)(node, addMessage, getRule);
@@ -211,7 +230,7 @@
                 // the comparison type since object literal properties validation is done inside "ObjectExpression".
                 if (!(expectedArg.getObjType() && isObjectLiteral(actualArg))) {
                   if (!compareType(expectedArg, actualArg)) {
-                    addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
+                    addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg) + " to " + getTypeName(expectedArg), invalidArgument.severity);
                   }
                 }                
               }
