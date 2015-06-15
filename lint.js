@@ -104,10 +104,31 @@
     function isRegexExpected(expectedType) {
       return hasProto(expectedType, 'RegExp.prototype');
     }
+
+    function isEmptyType(val) {
+      return (!val || (val.types && val.types.length == 0));
+    }
     
-    function compareType(expectedType, actualType) {
-      if (!expectedType) return true;
-      if (!actualType) return true;
+    var compareType = exports.compareType = function(expected, actual) {
+      if (isEmptyType(expected) || isEmptyType(actual)) return true;
+      if (expected.types) {
+        for (var i = 0; i < expected.types.length; i++) {
+          if (actual.types) {
+            for (var j = 0; j < actual.types.length; j++) {
+              if (compareType(expected.types[i], actual.types[j])) return true;
+            }
+          } else {
+            if (compareType(expected.types[i], actual.getType())) return true;
+          }
+        }
+        return false;
+      } else if (actual.types) {
+        for (var i = 0; i < actual.types.length; i++) {
+          if (compareType(expected.getType(), actual.types[i])) return true;
+        }
+      }
+      var expectedType = expected.getType(), actualType = actual.getType();
+      if (!expectedType || !actualType) return true;
       var currentProto = actualType.proto;
       while(currentProto) {
         if (expectedType.proto && expectedType.proto.name === currentProto.name) return true;
@@ -189,7 +210,7 @@
                 // if actual type is an Object literal and expected type is an object, we ignore 
                 // the comparison type since object literal properties validation is done inside "ObjectExpression".
                 if (!(expectedArg.getObjType() && isObjectLiteral(actualArg))) {
-                  if (!compareType(expectedArg.getType(), actualArg.getType())) {
+                  if (!compareType(expectedArg, actualArg)) {
                     addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg.getType()) + " to " + getTypeName(expectedArg.getType()), invalidArgument.severity);
                   }
                 }                
