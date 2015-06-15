@@ -91,7 +91,7 @@ function loadPlugins(projectDir, plugins) {
     if (plugin == "lint") {
       mod = lint;
     } else {  
-      var found = require.resolve("tern/plugin/" + file); // findFile(plugin + ".js", projectDir, path.resolve(distDir, "tern/plugin"));
+      var found = require.resolve("tern/plugin/" + plugin + ".js"); // findFile(plugin + ".js", projectDir, path.resolve(distDir, "tern/plugin"));
       if (!found) {
         try {
           found = require.resolve("tern-" + plugin);
