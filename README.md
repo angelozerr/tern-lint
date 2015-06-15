@@ -12,9 +12,15 @@ What do you mean with semantic errors? Invalid argument is a sample of semantic 
 
 See [Validation rules](https://github.com/angelozerr/tern-lint/wiki/Validation-Rules) for more informations.
 
+[tern-lint](https://github.com/angelozerr/tern-lint) is able to use JSDoc annotations for the validation : 
+
+![Type mismatch by using JSDoc](https://github.com/angelozerr/tern-lint/wiki/images/CodeMirrorAddon_TypeMismatchByUsingJSDoc.png)
+
+See [Validation with JSDoc](https://github.com/angelozerr/tern-lint/wiki/Validation-JSDoc) for more informations.
+ 
 [tern-lint](https://github.com/angelozerr/tern-lint) provides :
 
- * the tern lint plugin `lint.js` to validate JavaScripts files.
+ * the tern lint plugin `lint.js` to validate JavaScript files.
  * the CodeMirror lint addon `tern-lint.js` which uses tern lint plugin `lint.js`
  * the `bin/lint` to use tern lint with command line.
  
