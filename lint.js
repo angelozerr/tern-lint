@@ -15,7 +15,8 @@
     "UnusedVariable" : {"severity" : "warning"},
     "UnknownModule" : {"severity" : "error"},
     "MixedReturnTypes": {"severity" : "warning"},
-    "ObjectLiteral": {"severity" : "error"}
+    "ObjectLiteral": {"severity" : "error"},
+    "TypeMismatch": {"severity" : "warning"}
   };
 
   function makeVisitors(server, query, file, messages) {
@@ -379,6 +380,16 @@
       // the is called as a function.
       NewExpression: validateCallExpression,
       CallExpression: validateCallExpression,
+      AssignmentExpression: function(node, state, c) {
+        if (!node.left || !node.right) return;
+        var rule = getRule("TypeMismatch");
+        if (!rule) return;
+        var leftType = infer.expressionType({node: node.left, state: state}), 
+            rightType = infer.expressionType({node: node.right, state: state});
+        if (!compareType(leftType, rightType)) {
+          addMessage(node.right, "Type mismatch: cannot convert from " + getTypeName(leftType) + " to " + getTypeName(rightType), rule.severity);
+        }        
+      },
       ObjectExpression: function(node, state, c) {
         // validate properties of the object literal
         var rule = getRule("ObjectLiteral");

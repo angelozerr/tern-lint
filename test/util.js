@@ -3,6 +3,7 @@
 var fs = require("fs"), path = require("path"), tern = require("tern"), assert = require('assert');
 require("../lint.js");
 
+
 var projectDir = path.resolve(__dirname, "..");
 var resolve = function(pth) {
   return path.resolve(projectDir, pth);
