@@ -120,7 +120,7 @@
       return (!val || (val.types && val.types.length == 0));
     }
     
-    var compareType = exports.compareType = function(expected, actual) {
+    function compareType(expected, actual) {
       if (isEmptyType(expected) || isEmptyType(actual)) return true;
       if (expected.types) {
         for (var i = 0; i < expected.types.length; i++) {
@@ -233,7 +233,7 @@
                   if (!compareType(expectedArg, actualArg)) {
                     addMessage(actualNode, "Invalid argument at " + (i+1) + ": cannot convert from " + getTypeName(actualArg) + " to " + getTypeName(expectedArg), invalidArgument.severity);
                   }
-                }                
+                }
               }
             }      
           }
