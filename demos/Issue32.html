@@ -126,7 +126,7 @@ overview.</p>
   //var server;
   //getURL("http://ternjs.net/defs/ecma5.json", function(err, code) {
   //  if (err) throw new Error("Request for ecma5.json: " + err);
-  var server = new CodeMirror.TernServer({defs: defs, plugins:{"lint":{}, "doc_comment": {}}});
+  var server = new CodeMirror.TernServer({defs: defs, plugins:{"lint":{}, "doc_comment": {"strong": true}}});
     editor.setOption("extraKeys", {
       "Ctrl-Space": function(cm) { server.complete(cm); },
       "Ctrl-I": function(cm) { server.showType(cm); },
