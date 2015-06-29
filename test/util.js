@@ -21,15 +21,15 @@ var allDefs = {
   chrome_apps : chrome_apps
 };
 
-var createServer = exports.createServer = function(defNames, options, useJSDoc) {
-  var defs = [];
+var createServer = exports.createServer = function(defNames, plugins, options, useJSDoc) {
+  var defs = [];  
   if (defNames) {
     for (var i = 0; i < defNames.length; i++) {
       var def = allDefs[defNames[i]];
       defs.push(def);
     }
   }
-  var plugins = {};
+  if (!plugins) plugins = {};
   plugins["lint"] = options ? options : {};
   if (useJSDoc) {
     // JSDoc must be used, add the doc_comment with "strong" option
@@ -51,8 +51,8 @@ var assertLintReponse = exports.assertLintReponse = function(err, resp, expected
   assert.equal(JSON.stringify(resp), JSON.stringify(expected));
 }
 
-exports.assertLint = function(text, expected, defNames, options, useJSDoc) {
-  var server = createServer(defNames, options, useJSDoc);
+exports.assertLint = function(text, expected, defNames, plugins, options, useJSDoc) {
+  var server = createServer(defNames, plugins, options, useJSDoc);
   server.addFile("test1.js", text);
   server.request({
     query : {

@@ -9,6 +9,9 @@ exports['test multiple types validation'] = require('./validate_multitypes');
 //exports['test Assignmement JSDoc validation'] = require('./validate_assignmement_jsdoc');
 exports['test Argument JSDoc validation'] = require('./jsdoc/validate_assignmement.js');
 
+// RequireJS
+exports['test RequireJS config validation'] = require('./requirejs/validate_config');
+
 // Full validation
 exports['test full validation'] = require('./validate_full');
 

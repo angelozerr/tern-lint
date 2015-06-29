@@ -12,7 +12,7 @@ exports['test Assignment of wrong type, according to JSDoc (issue 31)'] = functi
                      "to":50,
                      "severity":"warning",
                      "file":"test1.js"}]
-    }, [ "browser" ], IGNORE_UNUSED_VAR, true);
+    }, [ "browser" ], null, IGNORE_UNUSED_VAR, true);
     
     // Boolean|Number
     util.assertLint("/**\n * @type {Boolean|Number}\n */\nvar test\ntest = 'hello'", {
@@ -21,15 +21,15 @@ exports['test Assignment of wrong type, according to JSDoc (issue 31)'] = functi
                      "to":57,
                      "severity":"warning",
                      "file":"test1.js"}]
-    }, [ "browser" ], IGNORE_UNUSED_VAR, true);
+    }, [ "browser" ], null, IGNORE_UNUSED_VAR, true);
     
     // String
     util.assertLint("/**\n * @type {String}\n */\nvar test\ntest = 'hello'", {
         messages : []
-    }, [ "browser" ], IGNORE_UNUSED_VAR, true);    
+    }, [ "browser" ], null, IGNORE_UNUSED_VAR, true);    
 
     // Boolean|String
     util.assertLint("/**\n * @type {Boolean|String}\n */\nvar test\ntest = 'hello'", {
         messages : []
-    }, [ "browser" ], IGNORE_UNUSED_VAR, true); 
+    }, [ "browser" ], null, IGNORE_UNUSED_VAR, true); 
 }

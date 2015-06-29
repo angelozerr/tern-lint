@@ -6,7 +6,7 @@ exports['test Known property'] = function() {
 	// Known property document.getElementById
 	util.assertLint("var elt = document.getElementById('myId');", {
 		messages : []
-	}, [ "browser" ], IGNORE_UNUSED_VAR);
+	}, [ "browser" ], null, IGNORE_UNUSED_VAR);
 }
 
 exports['test Unknown property'] = function() {
@@ -20,7 +20,7 @@ exports['test Unknown property'] = function() {
 			"severity" : "warning",
 			"file": "test1.js"
 		} ]
-	}, [ "browser" ], IGNORE_UNUSED_VAR);
+	}, [ "browser" ], null, IGNORE_UNUSED_VAR);
 	// Unknown property as error
 	var options = {"rules" : {"UnknownProperty" : {"severity" : "error"}, 
 	                          "UnusedVariable" :  {"severity" : "none"}}};
@@ -32,7 +32,7 @@ exports['test Unknown property'] = function() {
 			"severity" : "error",
                         "file": "test1.js"
 		} ]
-	}, [ "browser" ], options);	
+	}, [ "browser" ], null, options);	
 }
 
 exports['test Unknown identifier'] = function() {
@@ -47,7 +47,7 @@ exports['test Unknown identifier'] = function() {
 			"severity" : "warning",
                         "file": "test1.js"
 		} ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 	// Unknown identifier as error
 	var options = {"rules" : {"UnknownIdentifier" : {"severity" : "error"},
 	                          "UnusedVariable" :  {"severity" : "none"}}};
@@ -59,7 +59,7 @@ exports['test Unknown identifier'] = function() {
 			"severity" : "error",
                         "file": "test1.js"
 		} ]
-	}, null, options);	
+	}, null, null, options);	
 }
 
 exports['test issue1'] = function() {
@@ -73,7 +73,7 @@ exports['test issue1'] = function() {
 			"severity" : "error",
                         "file": "test1.js"
 		} ]
-	}, [ "ecma5" ], IGNORE_UNUSED_VAR);
+	}, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
 	// Not a function as warning
 	var options = {"rules" : {"NotAFunction" : {"severity" : "warning"},
 	                          "UnusedVariable" :  {"severity" : "none"}}};	
@@ -85,7 +85,7 @@ exports['test issue1'] = function() {
 			"severity" : "warning",
                         "file": "test1.js"
 		} ]
-	}, [ "ecma5" ], options);	
+	}, [ "ecma5" ], null, options);	
 	// without ecma5, var 'a' is not an array.
 	util.assertLint("var a = [];\nvar len = a.length();", {
 		messages : [ {
@@ -95,7 +95,7 @@ exports['test issue1'] = function() {
 			"severity" : "warning",
                         "file": "test1.js"
 		} ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 }
 
 exports['test issue2'] = function() {
@@ -112,11 +112,11 @@ exports['test issue2'] = function() {
 exports['test variables inside functions'] = function() {
 	util.assertLint("function test() { var a = {len: 5}; var len = a.len; }\nfunction b() { }", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	util.assertLint("function b() { }\nfunction test() { var d = 5; var a = {len: 5}; var len = a.len; }", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 }
 
 
@@ -124,13 +124,13 @@ exports['test functions parameters'] = function() {
 	// In this case the type of `a` is inferred as a string
 	util.assertLint("function test(a) { var t = a; }; test('something');", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	// In this case the type is unknown, but the variable is defined
 	// (should not produce a warning)
 	util.assertLint("function test(a) { var t = a; };", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 }
 
 
@@ -138,18 +138,18 @@ exports['test properties on functions parameters'] = function() {
 	// In this case the type of `a` is inferred as an object with a property `len`.
 	util.assertLint("function test(a) { var len = a.len; }; test({len: 5});", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	// In this case the type of `a` is unknown, and should not produce warnings
 	// on any of its properties.
 	util.assertLint("function test(a) { var len = a.len; };", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	// The same goes for function calls on an unknown type
 	util.assertLint("function test(a) { var len = a.myLength(); };", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 }
 
 exports['test assignment of unknown value'] = function() {
@@ -161,16 +161,16 @@ exports['test assignment of unknown value'] = function() {
 			"to": 42,
 			"severity": "warning",
                         "file": "test1.js"} ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	// The type of a.t is unknown, but it is still a valid property.
 	util.assertLint("var a = {}; function test(p) { a.t = p; var b = a.t; }", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	util.assertLint("var a = {}; function test(p) { a.t = p; }", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	// This should only contain a warning for `notdefined`, not for b = a.val.
 	util.assertLint("function A() {}; A.prototype.val = notdefined; var a = new A(); var b = a.val;", {
@@ -180,34 +180,34 @@ exports['test assignment of unknown value'] = function() {
 			"to": 45,
 			"severity": "warning",
             "file": "test1.js"} ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	util.assertLint("var a = {t: 5}; function test(p) { a.t = p; }", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 }
 
 exports['test dynamic properties (bracket notation)'] = function() {
 	util.assertLint("var obj = { test: 1 }; var key = 'test'; var val1 = obj[key]; var val2 = obj['test'];", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 
 	util.assertLint("var obj = { test: function() {} }; var key = 'test'; obj[key](); obj['test']();", {
 		messages : [ ]
-	}, null, IGNORE_UNUSED_VAR);
+	}, null, null, IGNORE_UNUSED_VAR);
 }
 
 exports['test undefined (issue 35)'] = function() {
   util.assertLint("undefined", {
           messages : []
-  }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+  }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
 }
 
 exports['test Unknown property "x" (issue 17)'] = function() {
   
   util.assertLint("var a = {}; a.", {
           messages : []
-  }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+  }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
   
   util.assertLint("var a = {}; a.xxx", {
     messages : [ {
@@ -216,7 +216,7 @@ exports['test Unknown property "x" (issue 17)'] = function() {
       "to": 17,
       "severity": "warning",
       "file": "test1.js"} ]
-  }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+  }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
 
 }
 
@@ -225,7 +225,7 @@ exports['test issue13'] = function() {
   // https://github.com/angelozerr/tern-lint/issues/13
   util.assertLint("var b = {test: ''};\nvar a = '';\na = {test: function() {}};\na.test();", {
       messages : []
-  }, [ "ecma5" ], IGNORE_UNUSED_VAR);
+  }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
 }
 
 if (module == require.main) require('test').run(exports)

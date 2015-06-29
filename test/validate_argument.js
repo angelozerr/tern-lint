@@ -10,16 +10,16 @@ exports['test Invalid Argument'] = function() {
             "message":"Invalid argument at 1: cannot convert from Object.prototype to String.prototype","from":34,"to":44,"severity":"error",
             "file": "test1.js"
           }]
-  }, [ "browser" ], IGNORE_UNUSED_VAR);  
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR);  
   
   // id is string => OK 
   util.assertLint("var elt = document.getElementById('100');", {
           messages : []  
-  }, [ "browser" ], IGNORE_UNUSED_VAR);  
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR);  
   // id is string => OK 
   util.assertLint("var id = '100'; var elt = document.getElementById(id);", {
           messages : []  
-  }, [ "browser" ], IGNORE_UNUSED_VAR);
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR);
   // id is number although it should be string 
   util.assertLint("var elt = document.getElementById(100);", {
           messages : [ {
@@ -28,7 +28,7 @@ exports['test Invalid Argument'] = function() {
             "to": 37,
             "severity": "error",
             "file": "test1.js"}]
-  }, [ "browser" ], IGNORE_UNUSED_VAR);
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR);
   // id is number although it should be string 
   util.assertLint("var id = 100; var elt = document.getElementById(id);", {
           messages : [ {
@@ -37,11 +37,11 @@ exports['test Invalid Argument'] = function() {
             "to": 50,
             "severity": "error",
             "file": "test1.js"}]
-  }, [ "browser" ], IGNORE_UNUSED_VAR);
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR);
   // listener must be a function => OK 
   util.assertLint("var f = function() {}; document.addEventListener('click', f, true)", {
           messages : []
-  }, [ "browser" ], IGNORE_UNUSED_VAR);  
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR);  
   // listener must be a function but argument is a boolean 
   util.assertLint("var b = true; document.addEventListener('click', b, true)", {
           messages : [{
@@ -50,11 +50,11 @@ exports['test Invalid Argument'] = function() {
             "to": 50,
             "severity": "error",
             "file": "test1.js"}]
-  }, [ "browser" ], IGNORE_UNUSED_VAR);
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR);
   // null argument => OK 
   util.assertLint("var elt = document.getElementById(null);", {
           messages : []
-  }, [ "browser" ], IGNORE_UNUSED_VAR);
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR);
   // Unknown argument => throw error widh Unknown identifier
   util.assertLint("var elt = document.getElementById(xxx);", {
           messages : [{
@@ -64,7 +64,7 @@ exports['test Invalid Argument'] = function() {
             "severity" : "warning",
             "file": "test1.js"
     }]
-  }, [ "browser" ], IGNORE_UNUSED_VAR); 
+  }, [ "browser" ], null, IGNORE_UNUSED_VAR); 
   
   // isEqualNode waits Node.prototype and document.getElementById returns Element.prototype which extends Node.prototype => OK
   util.assertLint("document.getElementById('id1').isEqualNode(document.getElementById('id2'))", {
