@@ -202,6 +202,7 @@
         var fnType = type.getFunctionType();
         if(fnType == null) {
           if (notAFunctionRule && !isFunctionType(type)) addMessage(node, "'" + getNodeName(node) + "' is not a function", notAFunctionRule.severity);
+          return;
         }
         var fnLint = getFunctionLint(fnType);
         var continueLint = fnLint ? fnLint(node, addMessage, getRule) : true;
