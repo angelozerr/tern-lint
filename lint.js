@@ -201,11 +201,11 @@
         // If one of them is a function, type.getFunctionType() will return it.
         var fnType = type.getFunctionType();
         if(fnType == null) {
-          if (notAFunctionRule && !isFunctionType(type)) addMessage(node, "'" + getNodeName(node) + "' is not a function", notAFunctionRule.severity);                           
-        } else if (getFunctionLint(fnType)) {
-           // custom lint for function
-          getFunctionLint(fnType)(node, addMessage, getRule);
-        } else if (fnType.args) {
+          if (notAFunctionRule && !isFunctionType(type)) addMessage(node, "'" + getNodeName(node) + "' is not a function", notAFunctionRule.severity);
+        }
+        var fnLint = getFunctionLint(fnType);
+        var continueLint = fnLint ? fnLint(node, addMessage, getRule) : true;
+        if (continueLint && fnType.args) {
           // validate parameters of the function 
           if (!invalidArgument) return;
           var actualArgs = node.arguments;
