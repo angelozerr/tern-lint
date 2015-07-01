@@ -484,7 +484,7 @@
     lints[name] = lint;  
   };
   
-  function getLint(name) {
+  var getLint = tern.getLint = function(name) {
     if (!name) return null;
     return lints[name];
   }
