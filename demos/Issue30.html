@@ -85,6 +85,17 @@ function test(state) {
   }
   return true; // OK
 }
+
+
+/**
+ * @param {String} x
+ * @param {Number} y
+ * @returns {String}
+**/
+function foo(x, y) {
+  return x.length * y;
+}
+foo('Hello', 42);
 </textarea></p>
 
 <p>Demonstrates integration of <a href="http://ternjs.net/">Tern</a>
