@@ -321,17 +321,11 @@
         if (!node.argument) return;
         var rule = getRule("MixedReturnTypes");
         if (!rule) return;
-        if (state.fnType && state.fnType.retval && state.fnType.retval.types && state.fnType.retval.types.length > 1) {
-          var type = infer.expressionType({node: node.argument, state: state}), types = state.fnType.retval.types;
-          var expectedTypes = "";
-          for (var i = 0; i < types.length; i++) {
-            var t = types[i];
-            if (type != t) {
-              if (expectedTypes != "") expectedTypes+="|";
-              expectedTypes+= getTypeName(t)
-            }
+        if (state.fnType && state.fnType.retval) {
+          var actualType = infer.expressionType({node: node.argument, state: state}), expectedType = state.fnType.retval;
+          if (!compareType(expectedType, actualType)) {
+            addMessage(node, "Invalid return type : cannot convert from " + getTypeName(actualType) + " to " + getTypeName(expectedType), rule.severity);
           }
-          addMessage(node, "Cannot convert from " + getTypeName(type) + " to " + expectedTypes, rule.severity);
         }
       },
       // Detects expressions of the form `object.property`
