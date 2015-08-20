@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "tern": ">=0.13.0",
+    "acorn": "^2.3.0",
     "glob": "3",
     "minimatch": "0.2"
   },

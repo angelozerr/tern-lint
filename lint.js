@@ -16,7 +16,8 @@
     "UnknownModule" : {"severity" : "error"},
     "MixedReturnTypes": {"severity" : "warning"},
     "ObjectLiteral": {"severity" : "error"},
-    "TypeMismatch": {"severity" : "warning"}
+    "TypeMismatch": {"severity" : "warning"},
+    "Array": {"severity" : "error"},
   };
 
   function makeVisitors(server, query, file, messages) {
@@ -168,6 +169,16 @@
       }
     }
     
+    function checkItemInArray(node, expectedArg, state, invalidArgument) {
+      var elements = node.elements, expectedType = expectedArg.hasProp("<i>");
+      for (var i = 0; i < elements.length; i++) {
+        var elt = elements[i], actualType = infer.expressionType({node: elt, state: state});
+        if (!compareType(expectedType, actualType)) {
+          addMessage(elt, "Invalid item at " + (i+1) + ": cannot convert from " + getTypeName(actualType) + " to " + getTypeName(expectedType), invalidArgument.severity);
+        }
+      }
+    }    
+    
     function isObjectLiteral(type) {
       var objType = type.getObjType();
       return objType && objType.proto && objType.proto.name == "Object.prototype"; 
@@ -293,6 +304,16 @@
       }      
     }
     
+    function getArrType(type) {
+      if (type instanceof infer.Arr) {
+        return type.getObjType(); 
+      } else if (type.types) {
+        for (var i = 0; i < type.types.length; i++) {
+          if (getArrType(type.types[i])) return type.types[i];
+        }
+      }
+    }
+    
     var visitors = {
       VariableDeclaration: validateDeclaration,
       FunctionDeclaration: validateDeclaration,
@@ -410,6 +431,17 @@
           // expected type is known. Ex: config object of RequireJS
           checkPropsInObject(node, expectedType, actualType, rule);
         }
+      },
+      ArrayExpression: function(node, state, c) {
+        // validate elements of the Arrray
+        var rule = getRule("Array");
+        if (!rule) return;
+        //var actualType = infer.expressionType({node: node, state: state});
+        var ctxType = infer.typeFromContext(file.ast, {node: node, state: state}), expectedType = getArrType(ctxType);        
+        if (expectedType /*&& expectedType != actualType*/) {
+          // expected type is known. Ex: config object of RequireJS
+          checkItemInArray(node, expectedType, state, rule);
+        }        
       }
     };
 
