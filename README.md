@@ -136,6 +136,8 @@ See [Command Line](https://github.com/angelozerr/tern-lint/wiki/Command-Line) fo
 	
 # Validation rules
 
+## Native
+
 tern lint validate JS files but not syntax errors, it manages those validation rules : 
 
  * `unknown property`. (ex : document.getElementByIdXXX  where getElementByIdXXX is an unknown property of document)
@@ -145,6 +147,17 @@ tern lint validate JS files but not syntax errors, it manages those validation r
   
 See [Validation rules](https://github.com/angelozerr/tern-lint/wiki/Validation-Rules) for more informations.
 
+## Custom
+
+You can develop a custom lint to validate anything. Here a list of tern plugin which provides custom lint : 
+
+ * [YUI3](https://github.com/angelozerr/tern-aui2.0.x/wiki/Features#yui-use-module) to validate YUI3 modules.
+ * [Node Extension](https://github.com/angelozerr/tern-node-extension) to validate required modules.
+ * [RequireJS Extension](https://github.com/angelozerr/tern-requirejs-extension) to validate required modules.
+ * [Browser Extension](https://github.com/angelozerr/tern-browser-extension) to validate syntax of CSS selectors, elements IDS.
+ * [jQuery Extension](https://github.com/angelozerr/tern-jquery-extension) to validate syntax of CSS selectors, elements IDS.
+ * [Tabris](https://github.com/angelozerr/tern-tabris) to validate tabris action.
+   
 # Structure
 
 The basic structure of the project is given in the following way:
