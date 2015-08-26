@@ -7,7 +7,7 @@ exports['test Invalid Argument'] = function() {
   // id is an object literal but it should be string 
   util.assertLint("var elt = document.getElementById({foo: 400});", {
           messages : [ {
-            "message":"Invalid argument at 1: cannot convert from Object.prototype to String.prototype","from":34,"to":44,"severity":"error",
+            "message":"Invalid argument at 1: cannot convert from Object.prototype to string","from":34,"to":44,"severity":"error",
             "file": "test1.js"
           }]
   }, [ "browser" ], null, IGNORE_UNUSED_VAR);  
@@ -23,7 +23,7 @@ exports['test Invalid Argument'] = function() {
   // id is number although it should be string 
   util.assertLint("var elt = document.getElementById(100);", {
           messages : [ {
-            "message": "Invalid argument at 1: cannot convert from Number.prototype to String.prototype",
+            "message": "Invalid argument at 1: cannot convert from number to string",
             "from": 34,
             "to": 37,
             "severity": "error",
@@ -32,7 +32,7 @@ exports['test Invalid Argument'] = function() {
   // id is number although it should be string 
   util.assertLint("var id = 100; var elt = document.getElementById(id);", {
           messages : [ {
-            "message": "Invalid argument at 1: cannot convert from Number.prototype to String.prototype",
+            "message": "Invalid argument at 1: cannot convert from number to string",
             "from": 48,
             "to": 50,
             "severity": "error",
@@ -45,7 +45,7 @@ exports['test Invalid Argument'] = function() {
   // listener must be a function but argument is a boolean 
   util.assertLint("var b = true; document.addEventListener('click', b, true)", {
           messages : [{
-            "message": "Invalid argument at 2: cannot convert from Boolean.prototype to Function.prototype",
+            "message": "Invalid argument at 2: cannot convert from bool to Function.prototype",
             "from": 49,
             "to": 50,
             "severity": "error",
@@ -74,7 +74,7 @@ exports['test Invalid Argument'] = function() {
   // New expression works like Call expression
   util.assertLint("new Array('');", {
     messages : [{
-      "message" : "Invalid argument at 1: cannot convert from String.prototype to Number.prototype",
+      "message" : "Invalid argument at 1: cannot convert from string to number",
       "from" : 10,
       "to" : 12,
       "severity" : "error",

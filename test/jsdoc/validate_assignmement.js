@@ -7,7 +7,7 @@ exports['test Assignment of wrong type, according to JSDoc (issue 31)'] = functi
     
     // Boolean
     util.assertLint("/**\n * @type {Boolean}\n */\nvar test\ntest = 'hello'", {
-        messages : [{"message":"Type mismatch: cannot convert from Boolean.prototype to String.prototype",
+        messages : [{"message":"Type mismatch: cannot convert from bool to string",
                      "from":43,
                      "to":50,
                      "severity":"warning",
@@ -16,7 +16,7 @@ exports['test Assignment of wrong type, according to JSDoc (issue 31)'] = functi
     
     // Boolean|Number
     util.assertLint("/**\n * @type {Boolean|Number}\n */\nvar test\ntest = 'hello'", {
-        messages : [{"message":"Type mismatch: cannot convert from Boolean.prototype|Number.prototype to String.prototype",
+        messages : [{"message":"Type mismatch: cannot convert from bool|number to string",
                      "from":50,
                      "to":57,
                      "severity":"warning",
