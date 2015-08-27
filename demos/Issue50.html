@@ -96,13 +96,13 @@ Customer.prototype.constructor = Person;
 
 function createSomebody(numb) {
   if (numb % 2 === 1) {
-    return new Employee("me", "worker"); // Cannot convert from Employee to Customer
+    return new Employee("me", "worker");
   } else {
     return new Customer("notMe");
   }
 }
 
-createSomebody(2);</textarea></p>
+alert(createSomebody(2)); // cannot convert from Employee|Customer to string</textarea></p>
 
         <p>Demonstrates integration of <a href="http://ternjs.net/">Tern</a>
             and CodeMirror. The following keys are bound:</p>
