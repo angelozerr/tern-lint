@@ -7,7 +7,7 @@ exports['test RequireJS config'] = function() {
    
     // Boolean
     util.assertLint("requirejs.config({baseUrl:'', XXXX:true})", {
-        messages : [{"message":"Invalid property at 2: XXXX is not a property in Object.prototype",
+        messages : [{"message":"Invalid property at 2: XXXX is not a property in config",
                      "from":30,
                      "to":34,
                      "severity":"error",

@@ -104,7 +104,10 @@
         }
         return s == "" ? "Unknown type" : s; 
       }
-      return (type.proto) ? type.proto.name : "Unknown type";       
+      if (type.name) {
+        return type.name;
+      }
+      return (type.proto) ? type.proto.name : "Unknown type";
     }
     
     function hasProto(expectedType, name) {

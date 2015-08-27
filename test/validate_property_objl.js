@@ -62,7 +62,7 @@ exports['test Invalid Object Literal property'] = function() {
   // a Property that does not type check, (hidden should be a bool)
   util.assertLint("chrome.app.window.create('index.html', {hidden: 'foo'});", {
           messages : [{
-            "message":"Invalid property at 1: cannot convert from String.prototype to Boolean.prototype",
+            "message":"Invalid property at 1: cannot convert from string to bool",
             "from":48,
             "to":53,
             "severity":"error",
