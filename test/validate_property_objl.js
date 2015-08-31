@@ -17,7 +17,7 @@ exports['test type-checking of object literals declared before a function with a
   
   // A Property that does not type check, (hidden should be a bool)
   util.assertLint("var obj2 = {hidden: 'foo'}; chrome.app.window.create('index.html', obj2);", {
-    "messages":[{"message":"Invalid property at 1: cannot convert from String.prototype to Boolean.prototype","from":20,"to":25,"severity":"error",
+    "messages":[{"message":"Invalid property at 1: cannot convert from string to bool","from":20,"to":25,"severity":"error",
       "file": "test1.js"}]
   }, [ "chrome_apps" ], null, IGNORE_UNUSED_VAR);
 
@@ -40,7 +40,7 @@ exports['test type-checking of object literals declared before a function with a
   // id is forward declared object literal but it should be string
   util.assertLint("var lit = {foo: 400}; document.getElementById(lit);", {
           messages : [ {
-            "message":"Invalid argument at 1: cannot convert from Object.prototype to String.prototype","from":46,"to":49,"severity":"error",
+            "message":"Invalid argument at 1: cannot convert from lit to string","from":46,"to":49,"severity":"error",
             "file": "test1.js"
           }]
   }, [ "browser" ], null, IGNORE_UNUSED_VAR);

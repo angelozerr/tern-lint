@@ -450,7 +450,7 @@
   // VariableDeclaration in infer.searchVisitor breaks things for us.
   var scopeVisitor = walk.make({
     Function: function(node, _st, c) {
-      var scope = node.body.scope;
+      var scope = node.scope;
       if (node.id) c(node.id, scope);
       for (var i = 0; i < node.params.length; ++i)
         c(node.params[i], scope);

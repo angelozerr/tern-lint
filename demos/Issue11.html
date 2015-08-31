@@ -2,21 +2,21 @@
 
 <title>CodeMirror: Tern Demo</title>
 <meta charset="utf-8"/>
-<link rel=stylesheet href="codemirror/doc/docs.css">
+
 
 <!-- CodeMirror -->
-    <link rel="stylesheet" href="codemirror/lib/codemirror.css">
-    <script src="codemirror/lib/codemirror.js"></script>
-    <link rel="stylesheet" href="codemirror/theme/eclipse.css">
-    <script src="codemirror/addon/edit/closetag.js"></script>
-    <script src="codemirror/addon/edit/closebrackets.js"></script>    
-    <script src="codemirror/addon/edit/matchbrackets.js"></script>
-    <script src="codemirror/addon/selection/active-line.js"></script>
-    <script src="codemirror/addon/runmode/runmode.js"></script>
-    <script src="codemirror/mode/javascript/javascript.js"></script>    
+    <link rel="stylesheet" href="../node_modules/codemirror/lib/codemirror.css">
+    <script src="../node_modules/codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="../node_modules/codemirror/theme/eclipse.css">
+    <script src="../node_modules/codemirror/addon/edit/closetag.js"></script>
+    <script src="../node_modules/codemirror/addon/edit/closebrackets.js"></script>    
+    <script src="../node_modules/codemirror/addon/edit/matchbrackets.js"></script>
+    <script src="../node_modules/codemirror/addon/selection/active-line.js"></script>
+    <script src="../node_modules/codemirror/addon/runmode/runmode.js"></script>
+    <script src="../node_modules/codemirror/mode/javascript/javascript.js"></script>    
 
-    <script src="codemirror/addon/lint/lint.js"></script>
-    <link rel="stylesheet" href="codemirror/addon/lint/lint.css">
+    <script src="../node_modules/codemirror/addon/lint/lint.js"></script>
+    <link rel="stylesheet" href="../node_modules/codemirror/addon/lint/lint.css">
 
 
 <script>
@@ -26,13 +26,13 @@ CodeMirror.tern.addDef = function(def) {
 	defs.push(def);
 }
 </script>
-    <script src="codemirror-javascript/addon/hint/tern/defs/ecma5.json.js"></script>    
-    <script src="codemirror-javascript/addon/hint/tern/defs/browser.json.js"></script>
+    <script src="defs/ecma5.json.js"></script>    
+    <script src="defs/browser.json.js"></script>
         
   <!-- Tern JS -->
-  <script src="../node_modules/tern/node_modules/acorn/dist/acorn.js"></script>
-  <script src="	../node_modules/tern/node_modules/acorn/dist/acorn_loose.js"></script>
-  <script src="../node_modules/tern/node_modules/acorn/dist/walk.js"></script>
+  <script src="../node_modules/acorn/dist/acorn.js"></script>
+  <script src="	../node_modules/acorn/dist/acorn_loose.js"></script>
+  <script src="../node_modules/acorn/dist/walk.js"></script>
   <script src="../node_modules/tern/lib/signal.js"></script>
   <script src="../node_modules/tern/lib/tern.js"></script>
   <script src="../node_modules/tern/lib/def.js"></script>
@@ -40,14 +40,14 @@ CodeMirror.tern.addDef = function(def) {
   <script src="../node_modules/tern/lib/infer.js"></script>
 
   <!-- Official CodeMirror Tern addon -->
-  <script src="codemirror/addon/tern/tern.js"></script>   
+  <script src="../node_modules/codemirror/addon/tern/tern.js"></script>   
   
-<link rel="stylesheet" href="codemirror/addon/dialog/dialog.css">
-<link rel="stylesheet" href="codemirror/addon/hint/show-hint.css">
-<link rel="stylesheet" href="codemirror/addon/tern/tern.css">
-<script src="codemirror/addon/dialog/dialog.js"></script>
-<script src="codemirror/addon/hint/show-hint.js"></script>
-<script src="codemirror/addon/tern/tern.js"></script>
+<link rel="stylesheet" href="../node_modules/codemirror/addon/dialog/dialog.css">
+<link rel="stylesheet" href="../node_modules/codemirror/addon/hint/show-hint.css">
+<link rel="stylesheet" href="../node_modules/codemirror/addon/tern/tern.css">
+<script src="../node_modules/codemirror/addon/dialog/dialog.js"></script>
+<script src="../node_modules/codemirror/addon/hint/show-hint.js"></script>
+<script src="../node_modules/codemirror/addon/tern/tern.js"></script>
 
 <!--  Tern Lint -->
   <script src="../codemirror/addon/lint/tern-lint.js"></script>  
@@ -57,7 +57,7 @@ CodeMirror.tern.addDef = function(def) {
       .CodeMirror {border: 1px solid #ddd;}
     </style>
 <div id=nav>
-  <a href="http://codemirror.net"><img id=logo src="codemirror/doc/logo.png"></a>
+
 
   <ul>
     <li><a href="../index.html">Home</a>
@@ -90,7 +90,7 @@ and CodeMirror. The following keys are bound:</p>
 </dl>
 
 <p>Documentation is sparse for now. See the top of
-the <a href="codemirror/addon/tern/tern.js">script</a> for a rough API
+the <a href="../node_modules/codemirror/addon/tern/tern.js">script</a> for a rough API
 overview.</p>
 
 <script>
