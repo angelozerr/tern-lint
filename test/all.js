@@ -14,6 +14,9 @@ exports['test Returns JSDoc validation'] = require('./jsdoc/returns.js');
 // RequireJS
 exports['test RequireJS config validation'] = require('./requirejs/validate_config');
 
+// ES6
+exports['test ES6 let validation'] = require('./es6/let');
+
 // Full validation
 exports['test full validation'] = require('./validate_full');
 
