@@ -33,3 +33,16 @@ exports['test Assignment of wrong type, according to JSDoc (issue 31)'] = functi
         messages : []
     }, [ "browser" ], null, IGNORE_UNUSED_VAR, true); 
 }
+
+//See https://github.com/angelozerr/tern-lint/issues/31
+exports['test variable assignment of wrong type, according to JSDoc (issue 58)'] = function() {
+    
+    // Boolean
+    util.assertLint("/**\n * @type {Boolean}\n */\nvar test = 'hello'", {
+        messages : [{"message":"Type mismatch: cannot convert from bool to string",
+                     "from":38,
+                     "to":45,
+                     "severity":"warning",
+                     "file":"test1.js"}]
+    }, [ "browser" ], null, IGNORE_UNUSED_VAR, true);
+}
