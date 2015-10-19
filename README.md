@@ -51,14 +51,14 @@ If you are Eclipse user, you can use the tern lint.js too. See [Tern IDE & Valid
 
 ### Emacs 
 
-![Emacs & TernLint](https://camo.githubusercontent.com/a0aee78d66237ddc65e4ab1291ccbb496f52fd25/687474703a2f2f692e696d6775722e636f6d2f723335615244512e706e67)
+![Emacs & TernLint]https://github.com/angelozerr/tern-lint/wiki/images/EmacsAddon_TernLintOverview.png)
 
 See [tern-lint.el](https://github.com/katspaugh/tern-lint.el) for more information.
 
 ### Atom
 
 ![Atom & TernLint]
-(https://camo.githubusercontent.com/2f6791e4df4362cdbaf3f3fff17db1af63f24314/687474703a2f2f7777772e746f626961732d73636875626572742e636f6d2f6769746875622f6769746875622d7465726e2d6c696e742e706e67)
+(https://github.com/angelozerr/tern-lint/wiki/images/AtomAddon_TernLintOverview.png)
 
 See [atom-ternjs](https://github.com/tststs/atom-ternjs) for more information.
 
