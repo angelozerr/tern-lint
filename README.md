@@ -51,7 +51,7 @@ If you are Eclipse user, you can use the tern lint.js too. See [Tern IDE & Valid
 
 ### Emacs 
 
-![Emacs & TernLint]https://github.com/angelozerr/tern-lint/wiki/images/EmacsAddon_TernLintOverview.png)
+![Emacs & TernLint](https://github.com/angelozerr/tern-lint/wiki/images/EmacsAddon_TernLintOverview.png)
 
 See [tern-lint.el](https://github.com/katspaugh/tern-lint.el) for more information.
 
