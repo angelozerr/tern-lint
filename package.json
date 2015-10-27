@@ -14,11 +14,11 @@
     "test": "node ./test/all.js"
   },
   "dependencies": {
-    "tern": "^0.15.0",
-    "acorn": "^2.4.0"
+    "tern": "^0.16.0",
+    "acorn": "^2.5.2"
   },
   "devDependencies": { 
   	"test": ">=0.0.5",
-  	"codemirror": "^5.6.0"
+  	"codemirror": "^5.8.0"
   }
 }
