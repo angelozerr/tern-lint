@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "tern": "^0.16.0",
-    "acorn": "^2.5.2"
+    "acorn": "^2.6.4"
   },
   "devDependencies": { 
   	"test": ">=0.0.5",
-  	"codemirror": "^5.8.0"
+  	"codemirror": "^5.9.0"
   }
 }
