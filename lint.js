@@ -18,6 +18,7 @@
     "ObjectLiteral": {"severity" : "error"},
     "TypeMismatch": {"severity" : "warning"},
     "Array": {"severity" : "error"},
+    "ES6Modules": {"severity" : "error"}
   };
 
   function makeVisitors(server, query, file, messages) {
@@ -449,11 +450,43 @@
           // expected type is known. Ex: config object of RequireJS
           checkItemInArray(node, expectedType, state, rule);
         }        
-      }
+      },
+      ImportDeclaration: function(node, state, c) {
+       // Validate ES6 modules from + specifiers
+        var rule = getRule("ES6Modules");
+        if (!rule) return;
+        var me = infer.cx().parent.mod.modules;
+        if (!me) return; // tern plugin modules.js is not loaded
+        var source = node.source;
+        if (!source) return;
+        // Validate ES6 modules "from"
+        var modType = me.getModType(source);
+        if (!modType) addMessage(source, "Invalid modules from '" + source.value + "'", rule.severity);
+        // Validate ES6 modules "specifiers"
+        var specifiers = node.specifiers, specifier;
+        if (!specifiers) return;
+        for (var i = 0; i < specifiers.length; i++) {
+          var specifier = specifiers[i], imported = specifier.imported;
+          if (imported) {
+            var name = imported.name;
+            if (!modType.hasProp(name)) addMessage(imported, "Invalid modules specifier '" + getNodeName(imported) + "'", rule.severity);  
+          }
+        }
+      }      
     };
 
     return visitors;
   }
+  
+  /*ImportSpecifier: function(node, state, c) {
+    // Validate ES6 modules specifiers
+    var rule = getRule("ES6Modules");
+    if (!rule) return;
+    var me = infer.cx().parent.mod.modules;
+    if (!me) return; // tern plugin modules.js is not loaded
+    var modType = me.getModType(node.imported);
+    if (!modType) addMessage(node, "Invalid specifier '" + getNodeName(node.imported) + "'", rule.severity);
+  }*/
   
   // Adapted from infer.searchVisitor.
   // Record the scope and pass it through in the state.
