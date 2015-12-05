@@ -15,7 +15,9 @@
   },
   "dependencies": {
     "tern": "^0.16.0",
-    "acorn": "^2.6.4"
+    "acorn": "^2.6.4",
+    "glob": "3",
+    "minimatch": "0.2"
   },
   "devDependencies": { 
   	"test": ">=0.0.5",
