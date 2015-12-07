@@ -51,8 +51,14 @@ var assertLintReponse = exports.assertLintReponse = function(err, resp, expected
   assert.equal(JSON.stringify(resp), JSON.stringify(expected));
 }
 
-exports.assertLint = function(text, expected, defNames, plugins, options, useJSDoc) {
-  var server = createServer(defNames, plugins, options, useJSDoc);
+exports.assertLint = function(text, expected, defNames, plugins, options, files) {
+  var server = createServer(defNames, plugins, options);
+  if (files) {
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      server.addFile(f.name, f.text);
+    }
+  }
   server.addFile("test1.js", text);
   server.request({
     query : {
