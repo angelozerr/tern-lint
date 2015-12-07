@@ -10,11 +10,11 @@ exports['test [JSDoc] Validation for Array (issue 49)'] = function() {
         messages : [{"message":"Invalid item at 1: cannot convert from number to bool|string","from":57,"to":59,"severity":"error","file":"test1.js"},
                     {"message":"Invalid item at 3: cannot convert from number to bool|string","from":65,"to":67,"severity":"error","file":"test1.js"},
                     {"message":"Invalid item at 6: cannot convert from Object.prototype to bool|string","from":79,"to":81,"severity":"error","file":"test1.js"}]
-    }, [ "browser" ], null, IGNORE_UNUSED_VAR, true);
+    }, [ "browser" ], {"doc_comment": {"strong": true}}, IGNORE_UNUSED_VAR);
     
     // Boolean|String
     util.assertLint("/**\n * @type {Array.<Boolean|String>}\n */\nvar arr\narr = ['', '', true]", {
         messages : []
-    }, [ "browser" ], null, IGNORE_UNUSED_VAR, true);    
+    }, [ "browser" ], {"doc_comment": {"strong": true}}, IGNORE_UNUSED_VAR);    
  
 }

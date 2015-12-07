@@ -16,6 +16,7 @@ exports['test RequireJS config validation'] = require('./requirejs/validate_conf
 
 // ES6
 exports['test ES6 let validation'] = require('./es6/let');
+exports['test ES6 modules validation'] = require('./es6/es_modules');
 
 // Full validation
 exports['test full validation'] = require('./validate_full');

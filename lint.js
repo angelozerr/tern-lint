@@ -461,7 +461,10 @@
         if (!source) return;
         // Validate ES6 modules "from"
         var modType = me.getModType(source);
-        if (!modType) addMessage(source, "Invalid modules from '" + source.value + "'", rule.severity);
+        if (!modType) {
+          addMessage(source, "Invalid modules from '" + source.value + "'", rule.severity);
+          return;
+        }
         // Validate ES6 modules "specifiers"
         var specifiers = node.specifiers, specifier;
         if (!specifiers) return;
@@ -477,17 +480,7 @@
 
     return visitors;
   }
-  
-  /*ImportSpecifier: function(node, state, c) {
-    // Validate ES6 modules specifiers
-    var rule = getRule("ES6Modules");
-    if (!rule) return;
-    var me = infer.cx().parent.mod.modules;
-    if (!me) return; // tern plugin modules.js is not loaded
-    var modType = me.getModType(node.imported);
-    if (!modType) addMessage(node, "Invalid specifier '" + getNodeName(node.imported) + "'", rule.severity);
-  }*/
-  
+
   // Adapted from infer.searchVisitor.
   // Record the scope and pass it through in the state.
   // VariableDeclaration in infer.searchVisitor breaks things for us.
