@@ -209,7 +209,7 @@
       var notAFunctionRule = getRule("NotAFunction"), invalidArgument = getRule("InvalidArgument");
       if (!notAFunctionRule && !invalidArgument) return;        
       var type = infer.expressionType({node: node.callee, state: state});
-      if(!type.isEmpty()) {
+      if(type && !type.isEmpty()) {
         // If type.isEmpty(), it is handled by MemberExpression/Identifier already.
 
         // An expression can have multiple possible (guessed) types.
