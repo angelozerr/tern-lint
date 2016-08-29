@@ -10,14 +10,14 @@ var resolve = function(pth) {
 };
 var browser = JSON.parse(fs
     .readFileSync(resolve("node_modules/tern/defs/browser.json")), "utf8");
-var ecma5 = JSON.parse(fs
-    .readFileSync(resolve("node_modules/tern/defs/ecma5.json")), "utf8");
+var ecmascript = JSON.parse(fs
+    .readFileSync(resolve("node_modules/tern/defs/ecmascript.json")), "utf8");
 var chrome_apps = JSON.parse(fs
     .readFileSync(resolve("test/fixtures/chrome-apps.json")), "utf8");
 
 var allDefs = {
   browser : browser,
-  ecma5 : ecma5,
+  ecmascript: ecmascript,
   chrome_apps : chrome_apps
 };
 

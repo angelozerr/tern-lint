@@ -15,8 +15,8 @@
     "test": "node ./test/all.js"
   },
   "dependencies": {
-    "tern": "^0.16.0",
-    "acorn": "^2.6.4",
+    "tern": "^0.20.0",
+    "acorn": "^3.2.0",
     "glob": "3",
     "minimatch": "0.2"
   },

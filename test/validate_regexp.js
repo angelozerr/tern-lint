@@ -5,7 +5,7 @@ exports['test RegExp'] = function() {
   util.assertLint("var s = '';\n" +
                   "s.match('/(chapter \d+(\.\d)*)/i')", {
           messages : []
-  }, [ "ecma5" ]);
+  }, [ "ecmascript" ]);
 
   // Invalid RegExp
   util.assertLint("var s = '';\n" +
@@ -17,7 +17,7 @@ exports['test RegExp'] = function() {
             "severity" : "error",
             "file" : "test1.js"
             }]
-}, [ "ecma5" ]);
+}, [ "ecmascript" ]);
   
 }
 

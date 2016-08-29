@@ -80,7 +80,7 @@ exports['test Invalid Argument'] = function() {
       "severity" : "error",
       "file": "test1.js"
     }]
-  }, [ "ecma5" ]); 
+  }, [ "ecmascript" ]); 
 }
 
 if (module == require.main) require('test').run(exports)

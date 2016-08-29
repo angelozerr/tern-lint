@@ -73,7 +73,7 @@ exports['test issue1'] = function() {
 			"severity" : "error",
                         "file": "test1.js"
 		} ]
-	}, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
+	}, [ "ecmascript" ], null, IGNORE_UNUSED_VAR);
 	// Not a function as warning
 	var options = {"rules" : {"NotAFunction" : {"severity" : "warning"},
 	                          "UnusedVariable" :  {"severity" : "none"}}};	
@@ -85,8 +85,8 @@ exports['test issue1'] = function() {
 			"severity" : "warning",
                         "file": "test1.js"
 		} ]
-	}, [ "ecma5" ], null, options);	
-	// without ecma5, var 'a' is not an array.
+	}, [ "ecmascript" ], null, options);	
+	// without ecmascript, var 'a' is not an array.
 	util.assertLint("var a = [];\nvar len = a.length();", {
 		messages : [ {
 			"message" : "Unknown property 'length'",
@@ -200,14 +200,14 @@ exports['test dynamic properties (bracket notation)'] = function() {
 exports['test undefined (issue 35)'] = function() {
   util.assertLint("undefined", {
           messages : []
-  }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
+  }, [ "ecmascript" ], null, IGNORE_UNUSED_VAR);
 }
 
 exports['test Unknown property "x" (issue 17)'] = function() {
   
   util.assertLint("var a = {}; a.", {
           messages : []
-  }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
+  }, [ "ecmascript" ], null, IGNORE_UNUSED_VAR);
   
   util.assertLint("var a = {}; a.xxx", {
     messages : [ {
@@ -216,7 +216,7 @@ exports['test Unknown property "x" (issue 17)'] = function() {
       "to": 17,
       "severity": "warning",
       "file": "test1.js"} ]
-  }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
+  }, [ "ecmascript" ], null, IGNORE_UNUSED_VAR);
 
 }
 
@@ -225,7 +225,7 @@ exports['test issue13'] = function() {
   // https://github.com/angelozerr/tern-lint/issues/13
   util.assertLint("var b = {test: ''};\nvar a = '';\na = {test: function() {}};\na.test();", {
       messages : []
-  }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
+  }, [ "ecmascript" ], null, IGNORE_UNUSED_VAR);
 }
 
 if (module == require.main) require('test').run(exports)

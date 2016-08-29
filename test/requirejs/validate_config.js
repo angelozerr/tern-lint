@@ -12,6 +12,6 @@ exports['test RequireJS config'] = function() {
                      "to":34,
                      "severity":"error",
                      "file":"test1.js"}]
-    }, [ "ecma5", "browser" ], { "requirejs" : {}}, IGNORE_UNUSED_VAR, true);
+    }, [ "ecmascript", "browser" ], { "requirejs" : {}}, IGNORE_UNUSED_VAR, true);
     
 }

@@ -10,7 +10,7 @@ exports['test issue36'] = function() {
           "to":24,
           "severity":"error",
           "file":"test1.js"}]
-    }, [ "ecma5" ], null, IGNORE_UNUSED_VAR);
+    }, [ "ecmascript" ], null, IGNORE_UNUSED_VAR);
 }
 
 

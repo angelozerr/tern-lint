@@ -461,7 +461,7 @@
         if (!source) return;
         // Validate ES6 modules "from"
         var modType = me.getModType(source);
-        if (!modType) {
+        if (!modType || modType == infer.ANull) {
           addMessage(source, "Invalid modules from '" + source.value + "'", rule.severity);
           return;
         }
