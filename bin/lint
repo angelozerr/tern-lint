@@ -1,14 +1,28 @@
 #!/usr/bin/env node
 
-var tern = require("tern"), lint = require("../lint");
-var fs = require("fs"), path = require("path");
+var tern = require("tern");
+var lint = require("../lint");
+var formatters = require('../format');
+var fs = require("fs");
+var path = require("path");
 var glob = require("glob"), minimatch = require("minimatch");
 
 var projectFileName = ".tern-project";
 var stripCRs = process.argv.indexOf("--strip-crs") > -1;
 var disableLoadingLocal = process.argv.indexOf("--disable-loading-local") > -1;
 var verbose = process.argv.indexOf("--verbose") > -1;
-var format = process.argv.indexOf("--format") > -1;
+
+function getFormat() {
+  if (process.argv.indexOf("--format=vim") > -1) {
+    return 'vim';
+  }
+
+  if (process.argv.indexOf("--format=pretty") > -1) {
+    return 'pretty';
+  }
+
+  return 'json';
+}
 
 function findProjectDir() {
   var dir = process.cwd();
@@ -23,10 +37,10 @@ function findProjectDir() {
 }
 
 var defaultConfig = {
-  libs: [],
-  loadEagerly: false,
-  plugins: {},
-  ecmaScript: true,
+  libs:             [],
+  loadEagerly:      false,
+  plugins:          {},
+  ecmaScript:       true,
   dependencyBudget: tern.defaultOptions.dependencyBudget
 };
 var homeDir = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
@@ -135,13 +149,13 @@ function startServer(dir, config) {
       else
         fs.readFile(path.resolve(dir, name), "utf8", c);
     },
-    async: true,
-    defs: defs,
-    plugins: plugins,
-    debug: verbose,
-    projectDir: dir,
+    async:            true,
+    defs:             defs,
+    plugins:          plugins,
+    debug:            verbose,
+    projectDir:       dir,
     dependencyBudget: config.dependencyBudget,
-    stripCRs: stripCRs
+    stripCRs:         stripCRs
   });
 
   if (!config.loadEagerly) config.loadEagerly = ["**/**.js"];
@@ -150,12 +164,19 @@ function startServer(dir, config) {
       server.addFile(file);
     });
   });
-  
+
   return server;
 }
 
-server.flush(function(err) {
+server.flush(function (err) {
   if (err) throw err;
   var query = {};
-  console.log(format ? JSON.stringify(lint.validateFiles(server, query), null, ' ') : JSON.stringify(lint.validateFiles(server, query)));
+
+  var format = formatters[getFormat()];
+  if (typeof format !== 'function') {
+    format = format.json;
+  }
+
+  var result = lint.validateFiles(server, query)
+  console.log(format(result));
 });
