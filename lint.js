@@ -29,26 +29,35 @@
     }
 
     function makeError(node, msg, severity) {
+      var error = {};
       var pos = getPosition(node);
-      var error = {
-          message: msg,
-          from: tern.outputPos(query, file, pos.start),
-          to: tern.outputPos(query, file, pos.end),
-          severity: severity
-      };
+
+      error.message  = msg;
+      error.from     = tern.outputPos(query, file, pos.start);
+      error.to       = tern.outputPos(query, file, pos.end);
+      error.severity = severity;
+
       if (query.lineNumber) {
-        error.lineNumber = query.lineCharPositions ? error.from.line : tern.outputPos({lineCharPositions: true}, file, pos.start).line;
+        error.lineNumber = query.lineCharPositions
+          ? error.from.line
+          : tern.outputPos(
+              Object.extend({}, query, { lineCharPositions: true }),
+              file,
+              pos.start
+            ).line;
       }
+
       if (!query.groupByFiles) error.file = file.name;
+
       return error;
     }
 
     function getNodeName(node) {
-      if(node.callee) {
+      if (node.callee) {
         // This is a CallExpression node.
         // We get the position of the function name.
         return getNodeName(node.callee);
-      } else if(node.property) {
+      } else if (node.property) {
         // This is a MemberExpression node.
         // We get the name of the property.
         return node.property.name;
@@ -58,17 +67,21 @@
     }
 
     function getNodeValue(node) {
-      if(node.callee) {
+      if (node.callee) {
         // This is a CallExpression node.
         // We get the position of the function name.
         return getNodeValue(node.callee);
-      } else if(node.property) {
+      } else if (node.property) {
         // This is a MemberExpression node.
         // We get the value of the property.
         return node.property.value;
       } else {
         if (node.type === "Identifier") {
-          var query = {type: "definition", start: node.start, end: node.end};
+          var query = {
+            type:  "definition",
+            start: node.start,
+            end:   node.end
+          };
           var expr = tern.findQueryExpr(file, query);
           var type = infer.expressionType(expr);
           var objExpr = type.getType();
@@ -398,12 +411,15 @@
       Identifier: function(node, state, c) {
         var rule = getRule("UnknownIdentifier");
         if (!rule) return;
-        var type = infer.expressionType({node: node, state: state});
+        var type = infer.expressionType({
+          node: node,
+          state: state,
+        });
 
-        if(type.originNode != null || type.origin != null) {
+        if (type.originNode != null || type.origin != null) {
           // The node is defined somewhere (could be this node),
           // regardless of whether or not the type is known.
-        } else if(type.isEmpty()) {
+        } else if (type.isEmpty()) {
           // The type of the identifier cannot be determined,
           // and the origin is unknown.
           addMessage(node, "Unknown identifier '" + getNodeName(node) + "'", rule.severity);
@@ -501,13 +517,15 @@
 
   var validateFile = exports.validateFile = function(server, query, file) {
     try {
-      var messages = [], ast = file.ast, state = file.scope;
+      var messages = [];
+      var ast = file.ast;
+      var state = file.scope;
       var visitors = makeVisitors(server, query, file, messages);
       walk.simple(ast, visitors, infer.searchVisitor, state);
-      return {messages: messages};
+      return { messages: messages };
     } catch(err) {
       console.error(err.stack);
-      return {messages: []};
+      return { messages: [] };
     }
   }
 
