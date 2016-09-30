@@ -34,7 +34,7 @@ exports.vim = function (data) {
 
   return data.messages.map(function (m) {
     return [
-      m.file + ':' + (m.from.line - 1) + ':' + (m.from.ch),
+      m.file + ':' + (m.from.line - 1) + ':' + (m.from.ch + 1),
       m.severity,
       m.message,
     ].join(': ');
