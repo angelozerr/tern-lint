@@ -3,6 +3,7 @@
  *
  * @param {Object} data
  * @param {Object[]} data.messages
+ * @return {String}
  */
 exports.json = function (data) {
   return JSON.stringify(data);
@@ -13,6 +14,7 @@ exports.json = function (data) {
  *
  * @param {Object} data
  * @param {Object[]} data.messages
+ * @return {String}
  */
 exports.pretty = function (data) {
   return JSON.stringify(data, null, ' ');
@@ -23,6 +25,7 @@ exports.pretty = function (data) {
  *
  * @param {Object} data
  * @param {Object[]} data.messages
+ * @return {String}
  */
 exports.vim = function (data) {
   if (!data || !data.messages) {
@@ -31,9 +34,10 @@ exports.vim = function (data) {
 
   return data.messages.map(function (m) {
     return [
-      m.file + ':',
-      'line ' + m.from + ',',
+      m.file,
+      m.from.line + '.' + m.from.ch,
       m.severity,
-    ].join(' ');
-  });
+      m.message,
+    ].join(': ');
+  }).join('\n');
 };

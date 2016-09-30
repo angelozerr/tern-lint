@@ -40,7 +40,6 @@ var defaultConfig = {
   libs:             [],
   loadEagerly:      false,
   plugins:          {},
-  ecmaScript:       true,
   dependencyBudget: tern.defaultOptions.dependencyBudget
 };
 var homeDir = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
@@ -74,8 +73,11 @@ function findFile(file, projectDir, fallbackDir) {
 var distDir = path.resolve(__dirname, "..");
 
 function findDefs(projectDir, config) {
-  var defs = [], src = config.libs;
-  if (src.indexOf("ecma5") == -1 && config.ecmaScript) src = ["ecma5"].concat(src);
+  var defs = [];
+
+  // Always require the ecmascript default tern def
+  var src = ['ecmascript'].concat(config.libs);
+
   for (var i = 0; i < src.length; ++i) {
     var file = src[i];
     if (!/\.json$/.test(file)) file = file + ".json";
@@ -170,7 +172,10 @@ function startServer(dir, config) {
 
 server.flush(function (err) {
   if (err) throw err;
-  var query = {};
+  var query = {
+    lineNumber: true,
+    lineCharPositions: true,
+  };
 
   var format = formatters[getFormat()];
   if (typeof format !== 'function') {
