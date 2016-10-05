@@ -6,7 +6,7 @@
   mod(root.tern || (root.tern = {}), tern, tern, acorn.walk);
 })(this, function(exports, infer, tern, walk) {
   "use strict";
-  
+
   var defaultRules = {
     "UnknownProperty" : {"severity" : "warning"},
     "UnknownIdentifier" : {"severity" : "warning"},
@@ -22,33 +22,42 @@
   };
 
   function makeVisitors(server, query, file, messages) {
-	
+
     function addMessage(node, msg, severity) {
       var error = makeError(node, msg, severity);
-      messages.push(error);		
+      messages.push(error);
     }
-	
+
     function makeError(node, msg, severity) {
+      var error = {};
       var pos = getPosition(node);
-      var error = {
-          message: msg,
-          from: tern.outputPos(query, file, pos.start),
-          to: tern.outputPos(query, file, pos.end),
-          severity: severity
-      };
+
+      error.message  = msg;
+      error.from     = tern.outputPos(query, file, pos.start);
+      error.to       = tern.outputPos(query, file, pos.end);
+      error.severity = severity;
+
       if (query.lineNumber) {
-        error.lineNumber = query.lineCharPositions ? error.from.line : tern.outputPos({lineCharPositions: true}, file, pos.start).line; 
+        error.lineNumber = query.lineCharPositions
+          ? error.from.line
+          : tern.outputPos(
+              Object.extend({}, query, { lineCharPositions: true }),
+              file,
+              pos.start
+            ).line;
       }
+
       if (!query.groupByFiles) error.file = file.name;
+
       return error;
     }
 
     function getNodeName(node) {
-      if(node.callee) {
+      if (node.callee) {
         // This is a CallExpression node.
         // We get the position of the function name.
         return getNodeName(node.callee);
-      } else if(node.property) {
+      } else if (node.property) {
         // This is a MemberExpression node.
         // We get the name of the property.
         return node.property.name;
@@ -58,27 +67,31 @@
     }
 
     function getNodeValue(node) {
-      if(node.callee) {
+      if (node.callee) {
         // This is a CallExpression node.
         // We get the position of the function name.
         return getNodeValue(node.callee);
-      } else if(node.property) {
+      } else if (node.property) {
         // This is a MemberExpression node.
         // We get the value of the property.
         return node.property.value;
       } else {
         if (node.type === "Identifier") {
-          var query = {type: "definition", start: node.start, end: node.end};
+          var query = {
+            type:  "definition",
+            start: node.start,
+            end:   node.end
+          };
           var expr = tern.findQueryExpr(file, query);
           var type = infer.expressionType(expr);
           var objExpr = type.getType();
           if (objExpr && objExpr.originNode) return getNodeValue(objExpr.originNode);
           return null;
-        }          
+        }
         return node.value;
       }
     }
-    
+
     function getPosition(node) {
       if(node.callee) {
         // This is a CallExpression node.
@@ -92,7 +105,7 @@
       }
       return node;
     }
-    
+
     function getTypeName(type) {
       if (!type) return "Unknown type";
       if (type.types) {
@@ -103,14 +116,14 @@
           var t = getTypeName(types[i]);
           if (t != "Unknown type") s+= t;
         }
-        return s == "" ? "Unknown type" : s; 
+        return s == "" ? "Unknown type" : s;
       }
       if (type.name) {
         return type.name;
       }
       return (type.proto) ? type.proto.name : "Unknown type";
     }
-    
+
     function hasProto(expectedType, name) {
       if (!expectedType) return false;
       if(!expectedType.proto) return false;
@@ -124,7 +137,7 @@
     function isEmptyType(val) {
       return (!val || (val.types && val.types.length == 0));
     }
-    
+
     function compareType(expected, actual) {
       if (isEmptyType(expected) || isEmptyType(actual)) return true;
       if (expected.types) {
@@ -152,7 +165,7 @@
       }
       return false;
     }
-    
+
     function checkPropsInObject(node, expectedArg, actualObj, invalidArgument) {
       var properties = node.properties, expectedObj = expectedArg.getType();
       for (var i = 0; i < properties.length; i++) {
@@ -172,7 +185,7 @@
         }
       }
     }
-    
+
     function checkItemInArray(node, expectedArg, state, invalidArgument) {
       var elements = node.elements, expectedType = expectedArg.hasProp("<i>");
       for (var i = 0; i < elements.length; i++) {
@@ -181,11 +194,11 @@
           addMessage(elt, "Invalid item at " + (i+1) + ": cannot convert from " + getTypeName(actualType) + " to " + getTypeName(expectedType), invalidArgument.severity);
         }
       }
-    }    
-    
+    }
+
     function isObjectLiteral(type) {
       var objType = type.getObjType();
-      return objType && objType.proto && objType.proto.name == "Object.prototype"; 
+      return objType && objType.proto && objType.proto.name == "Object.prototype";
     }
 
     function getFunctionLint(fnType) {
@@ -195,7 +208,7 @@
         return fnType.lint;
       };
     }
-    
+
     function isFunctionType(type) {
       if (type.types) {
         for (var i = 0; i < type.types.length; i++) {
@@ -207,7 +220,7 @@
 
     function validateCallExpression(node, state, c) {
       var notAFunctionRule = getRule("NotAFunction"), invalidArgument = getRule("InvalidArgument");
-      if (!notAFunctionRule && !invalidArgument) return;        
+      if (!notAFunctionRule && !invalidArgument) return;
       var type = infer.expressionType({node: node.callee, state: state});
       if(type && !type.isEmpty()) {
         // If type.isEmpty(), it is handled by MemberExpression/Identifier already.
@@ -222,7 +235,7 @@
         var fnLint = getFunctionLint(fnType);
         var continueLint = fnLint ? fnLint(node, addMessage, getRule) : true;
         if (continueLint && fnType.args) {
-          // validate parameters of the function 
+          // validate parameters of the function
           if (!invalidArgument) return;
           var actualArgs = node.arguments;
           if (!actualArgs) return;
@@ -235,15 +248,15 @@
                 var value = getNodeValue(actualNode);
                 if (value) {
                   try {
-                    var regex = new RegExp(value);  
-                  } 
+                    var regex = new RegExp(value);
+                  }
                   catch(e) {
-                    addMessage(actualNode, "Invalid argument at " + (i+1) + ": " + e, invalidArgument.severity);  
+                    addMessage(actualNode, "Invalid argument at " + (i+1) + ": " + e, invalidArgument.severity);
                   }
                 }
-              } else { 
+              } else {
                 var actualArg = infer.expressionType({node: actualNode, state: state});
-                // if actual type is an Object literal and expected type is an object, we ignore 
+                // if actual type is an Object literal and expected type is an object, we ignore
                 // the comparison type since object literal properties validation is done inside "ObjectExpression".
                 if (!(expectedArg.getObjType() && isObjectLiteral(actualArg))) {
                   if (!compareType(expectedArg, actualArg)) {
@@ -251,24 +264,24 @@
                   }
                 }
               }
-            }      
+            }
           }
         }
       }
     }
-    
+
     function validateAssignement(nodeLeft, nodeRight, rule, state) {
-      if (!nodeLeft || !nodeRight) return;      
+      if (!nodeLeft || !nodeRight) return;
       if (!rule) return;
-      var leftType = infer.expressionType({node: nodeLeft, state: state}), 
+      var leftType = infer.expressionType({node: nodeLeft, state: state}),
           rightType = infer.expressionType({node: nodeRight, state: state});
       if (!compareType(leftType, rightType)) {
         addMessage(nodeRight, "Type mismatch: cannot convert from " + getTypeName(leftType) + " to " + getTypeName(rightType), rule.severity);
-      }        
+      }
     }
-    
+
     function validateDeclaration(node, state, c) {
-      
+
       function isUsedVariable(varNode, varState, file, srv) {
         var name = varNode.name;
 
@@ -291,7 +304,7 @@
             infer.findRefs(scope.node, scope, name, scope, searchRef(file));
           } else {
             // global scope
-            infer.findRefs(file.ast, file.scope, name, scope, searchRef(file));          
+            infer.findRefs(file.ast, file.scope, name, scope, searchRef(file));
             for (var i = 0; i < srv.files.length && !hasRef; ++i) {
               var cur = srv.files[i];
               if (cur != file) infer.findRefs(cur.ast, cur.scope, name, scope, searchRef(cur));
@@ -300,7 +313,7 @@
         } catch(e) {};
         return hasRef;
       }
-      
+
       var unusedRule = getRule("UnusedVariable"), mismatchRule = getRule("TypeMismatch");
       if (!unusedRule && !mismatchRule) return;
       switch(node.type) {
@@ -312,7 +325,7 @@
               if (unusedRule && !isUsedVariable(varNode, state, file, server)) addMessage(varNode, "Unused variable '" + getNodeName(varNode) + "'", unusedRule.severity);
               // type mismatch?
               if (mismatchRule) validateAssignement(varNode, decl.init, mismatchRule, state);
-            } 
+            }
           }
           break;
         case "FunctionDeclaration":
@@ -320,20 +333,20 @@
             var varNode = node.id;
             if (varNode.name != "✖" && !isUsedVariable(varNode, state, file, server)) addMessage(varNode, "Unused function '" + getNodeName(varNode) + "'", unusedRule.severity);
           }
-          break;          
-      }      
+          break;
+      }
     }
-    
+
     function getArrType(type) {
       if (type instanceof infer.Arr) {
-        return type.getObjType(); 
+        return type.getObjType();
       } else if (type.types) {
         for (var i = 0; i < type.types.length; i++) {
           if (getArrType(type.types[i])) return type.types[i];
         }
       }
     }
-    
+
     var visitors = {
       VariableDeclaration: validateDeclaration,
       FunctionDeclaration: validateDeclaration,
@@ -362,7 +375,7 @@
           // Until we figure out how to handle these properly, we ignore these nodes.
           return;
         }
-        
+
         if(!parentType.isEmpty() && type.isEmpty()) {
           // The type of the property cannot be determined, which means
           // that the property probably doesn't exist.
@@ -398,15 +411,18 @@
       Identifier: function(node, state, c) {
         var rule = getRule("UnknownIdentifier");
         if (!rule) return;
-        var type = infer.expressionType({node: node, state: state});
+        var type = infer.expressionType({
+          node: node,
+          state: state,
+        });
 
-        if(type.originNode != null || type.origin != null) {
+        if (type.originNode != null || type.origin != null) {
           // The node is defined somewhere (could be this node),
           // regardless of whether or not the type is known.
-        } else if(type.isEmpty()) {
+        } else if (type.isEmpty()) {
           // The type of the identifier cannot be determined,
           // and the origin is unknown.
-          addMessage(node, "Unknown identifier '" + getNodeName(node) + "'", rule.severity);        	
+          addMessage(node, "Unknown identifier '" + getNodeName(node) + "'", rule.severity);
         } else {
           // Even though the origin node is unknown, the type is known.
           // This is typically the case for built-in identifiers (e.g. window or document).
@@ -428,7 +444,7 @@
         var actualType = node.objType;
         var ctxType = infer.typeFromContext(file.ast, {node: node, state: state}), expectedType = null;
         if (ctxType instanceof infer.Obj) {
-          expectedType = ctxType.getObjType(); 
+          expectedType = ctxType.getObjType();
         } else if (ctxType && ctxType.makeupType) {
           var objType = ctxType.makeupType();
           if (objType && objType.getObjType()) {
@@ -445,11 +461,11 @@
         var rule = getRule("Array");
         if (!rule) return;
         //var actualType = infer.expressionType({node: node, state: state});
-        var ctxType = infer.typeFromContext(file.ast, {node: node, state: state}), expectedType = getArrType(ctxType);        
+        var ctxType = infer.typeFromContext(file.ast, {node: node, state: state}), expectedType = getArrType(ctxType);
         if (expectedType /*&& expectedType != actualType*/) {
           // expected type is known. Ex: config object of RequireJS
           checkItemInArray(node, expectedType, state, rule);
-        }        
+        }
       },
       ImportDeclaration: function(node, state, c) {
        // Validate ES6 modules from + specifiers
@@ -472,10 +488,10 @@
           var specifier = specifiers[i], imported = specifier.imported;
           if (imported) {
             var name = imported.name, type = modType.getType();
-            if (type && !type.hasProp(name)) addMessage(imported, "Invalid modules specifier '" + getNodeName(imported) + "'", rule.severity);  
+            if (type && !type.hasProp(name)) addMessage(imported, "Invalid modules specifier '" + getNodeName(imported) + "'", rule.severity);
           }
         }
-      }      
+      }
     };
 
     return visitors;
@@ -498,28 +514,30 @@
   });
 
   // Validate one file
-  
+
   var validateFile = exports.validateFile = function(server, query, file) {
     try {
-      var messages = [], ast = file.ast, state = file.scope;
+      var messages = [];
+      var ast = file.ast;
+      var state = file.scope;
       var visitors = makeVisitors(server, query, file, messages);
       walk.simple(ast, visitors, infer.searchVisitor, state);
-      return {messages: messages};
+      return { messages: messages };
     } catch(err) {
       console.error(err.stack);
-      return {messages: []};
+      return { messages: [] };
     }
   }
-  
+
   tern.defineQueryType("lint", {
     takesFile: true,
     run: function(server, query, file) {
-      return validateFile(server, query, file);  
+      return validateFile(server, query, file);
     }
   });
 
   // Validate the whole files of the server
-  
+
   var validateFiles = exports.validateFiles = function(server, query) {
     try {
       var messages = [], files = server.files, groupByFiles = query.groupByFiles == true;
@@ -528,54 +546,54 @@
         var visitors = makeVisitors(server, query, file, messagesFile);
         walk.simple(ast, visitors, infer.searchVisitor, state);
         if (groupByFiles) messages.push({file:file.name, messages: messagesFile});
-      }        
+      }
       return {messages: messages};
     } catch(err) {
       console.error(err.stack);
       return {messages: []};
     }
   }
-  
+
   tern.defineQueryType("lint-full", {
     run: function(server, query) {
       return validateFiles(server, query);
     }
   });
-  
+
   var lints = Object.create(null);
   tern.registerLint = function(name, lint) {
-    lints[name] = lint;  
+    lints[name] = lint;
   };
-  
+
   var getLint = tern.getLint = function(name) {
     if (!name) return null;
     return lints[name];
   }
-  
-  tern.registerPlugin("lint", function(server, options) {	
+
+  tern.registerPlugin("lint", function(server, options) {
     server._lint = {
-      rules: getRules(options)	
+      rules: getRules(options)
     };
     return {
-    	passes: {},
-    	loadFirst: true
+      passes: {},
+      loadFirst: true
     };
   });
-  
+
   function getRules(options) {
     var rules = {};
     for(var ruleName in defaultRules) {
       if (options && options.rules && options.rules[ruleName] && options.rules[ruleName].severity) {
         if (options.rules[ruleName].severity != 'none') rules[ruleName] = options.rules[ruleName];
-      }	else {
-      	rules[ruleName] = defaultRules[ruleName];
+      } else {
+        rules[ruleName] = defaultRules[ruleName];
       }
     }
     return rules;
   }
-  
+
   function getRule(ruleName) {
     var cx = infer.cx(), server = cx.parent, rules = server._lint.rules;
     return rules[ruleName];
-  }  
-});  
+  }
+});
