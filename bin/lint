@@ -28,10 +28,16 @@ function findProjectDir() {
   var dir = process.cwd();
   for (;;) {
     try {
-      if (fs.statSync(path.resolve(dir, projectFileName)).isFile()) return dir;
-    } catch(e) {}
+      if (fs.statSync(path.resolve(dir, projectFileName)).isFile()) {
+        return dir;
+      }
+    }
+    catch(e) {}
+
     var shorter = path.dirname(dir);
-    if (shorter == dir) return null;
+    if (shorter == dir) {
+      return null;
+    }
     dir = shorter;
   }
 }
@@ -99,30 +105,53 @@ var defaultPlugins = ["doc_comment"];
 
 function loadPlugins(projectDir, plugins) {
   var options = {};
-  if (!plugins["lint"]) plugins["lint"] = {};
-  for (var plugin in plugins) {
-    var val = plugins[plugin];
-    if (!val) continue;
-    var mod = null;
-    if (plugin == "lint") {
-      mod = lint;
-    } else {  
-      var found = require.resolve("tern/plugin/" + plugin + ".js"); // findFile(plugin + ".js", projectDir, path.resolve(distDir, "tern/plugin"));
-      if (!found) {
-        try {
-          found = require.resolve("tern-" + plugin);
-        } catch (e) {
-          process.stderr.write("Failed to find plugin " + plugin + ".\n");
-          continue;
-        }
-      }
-      mod = require(found);
-    }
-    if (mod.hasOwnProperty("initialize")) mod.initialize(distDir);
-    options[path.basename(plugin)] = val;
+
+  if (!plugins["lint"]) {
+    plugins["lint"] = {};
   }
 
-  defaultPlugins.forEach(function(name) {
+  Object.keys(plugins).forEach((name) => {
+    var plugin = plugins[name];
+    if (!plugin) {
+      return;
+    }
+
+    var mod = null;
+    var pluginFilepath = null;
+
+    // Determine mod
+    if (name == "lint") {
+      mod = lint;
+    }
+    else {
+      try {
+        pluginFilepath = require.resolve("tern/plugin/" + name + ".js");
+      }
+      catch (e) {}
+      if (!pluginFilepath) {
+        try {
+          pluginFilepath = require.resolve("tern-" + name);
+        }
+        catch (e) {}
+      }
+
+      if (!pluginFilepath) {
+        process.stderr.write("Failed to find plugin " + name + ".\n");
+        return;
+      }
+
+      mod = require(pluginFilepath);
+    }
+
+    // Initialize mod
+    if (mod.hasOwnProperty("initialize")) {
+      mod.initialize(distDir);
+    }
+
+    options[path.basename(name)] = plugin;
+  });
+
+  defaultPlugins.forEach((name) => {
     if (!plugins.hasOwnProperty(name)) {
       options[name] = true;
       require("tern/plugin/" + name);
@@ -132,11 +161,13 @@ function loadPlugins(projectDir, plugins) {
 }
 
 var projectDir = findProjectDir();
+var config;
 if (projectDir) {
-  var config = readProjectFile(path.resolve(projectDir, projectFileName));
-} else {
+  config = readProjectFile(path.resolve(projectDir, projectFileName));
+}
+else {
   projectDir = process.cwd();
-  var config = defaultConfig;
+  config = defaultConfig;
 }
 
 var server = startServer(projectDir, config);
@@ -146,10 +177,12 @@ function startServer(dir, config) {
   var plugins = loadPlugins(dir, config.plugins);
   var server = new tern.Server({
     getFile: function(name, c) {
-      if (config.dontLoad && config.dontLoad.some(function(pat) {return minimatch(name, pat)}))
+      if (config.dontLoad && config.dontLoad.some((pat) => minimatch(name, pat))) {
         c(null, "");
-      else
+      }
+      else {
         fs.readFile(path.resolve(dir, name), "utf8", c);
+      }
     },
     async:            true,
     defs:             defs,
@@ -172,11 +205,8 @@ function startServer(dir, config) {
 
 server.flush(function (err) {
   if (err) throw err;
-  var query = {
-    lineNumber: true,
-    lineCharPositions: true,
-  };
 
+  var query = {};
   var format = formatters[getFormat()];
   if (typeof format !== 'function') {
     format = format.json;
