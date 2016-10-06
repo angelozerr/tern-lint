@@ -15,13 +15,15 @@
     "test": "node ./test/all.js"
   },
   "dependencies": {
-    "tern": "^0.20.0",
-    "acorn": "^4.0.3",
     "glob": "7.1.0",
     "minimatch": "3.0.3"
   },
   "devDependencies": { 
   	"test": ">=0.0.5",
   	"codemirror": "^5.9.0"
+  },
+  "peerDependencies": {
+    "tern": "^0.20.0",
+    "acorn": "^4.0.3"
   }
 }
